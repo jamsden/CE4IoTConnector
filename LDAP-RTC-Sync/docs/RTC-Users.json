@@ -1,0 +1,53 @@
+{
+	"LDAPConnection": {
+		"URI": "ldap:/mvs255.rtp.raleigh.ibm.com", 
+		"adminid": "cn=Mvs255 LDAP Administrator",
+		"adminPassword": "password"
+	},
+	"RTCServer": {
+		"serverURI": "https://ce4iot.rtp.raleigh.ibm.com:9443/ccm",
+		"admin": "jamsden",
+		"password": "password",
+		"RTC011": "JazzAdmins",
+		"RTC012": "JazzUsers",
+		"Licenses": [
+			{"NDGFLT": "Rational DOORS Next Generation - Analyst-Floating (Unlocked)"},
+			{"RTCFLT": "Rational Team Concert - Developer-Floating (Unlocked"}
+		],
+		"Project Areas": [
+			{
+				"name": "JKE Banking (Change Management",
+				"PA011": "Administrators",
+				"PA012": "Members",
+				"Process Roles": [
+					{"PR01": "Product Owner"},
+					{"PR02": "Scrum Master"},
+					{"PR03": "Stakeholder"},
+					{"PR04": "Team Member"}					
+				],
+				"TA01": {
+					"name": "Business Recovery Matters",
+					"TA011": "Administrators",
+					"TA012": "Members",
+					"Process Roles": [
+						{"PR011": "Product Owner"},
+						{"PR021": "Scrum Master"},
+						{"PR031": "Stakeholder"},
+						{"PR041": "Team Member"}					
+					]
+				},
+				"TA02": {
+					"name": "Energy Efficiency Matters"
+				},
+				"TA03": {
+					"name": "Release Engineering"
+				}
+				
+			},
+			{
+				"name": "pet Store",
+				"PA02": "Administrators"
+			}
+		]
+	}
+}

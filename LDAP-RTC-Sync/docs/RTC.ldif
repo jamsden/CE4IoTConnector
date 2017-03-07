@@ -1,0 +1,226 @@
+version: 1
+
+dn: ou=RTC,O=IBM
+objectclass: top
+objectclass: organizationalUnit
+ou: RTC
+
+dn: ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: organizationalUnit
+ou: https://ce4iot.rtp.raleigh.ibm.com:9443/ccm
+
+dn: cn=JazzAdmins,ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IB
+ M
+objectclass: top
+objectclass: groupOfNames
+cn: JazzAdmins
+member: racfid=BGREEN,profiletype=USER,CN=RACF255,O=IBM,C=RTC
+member: uid=jamsden,ou=User,ou=CLM,ou=system
+
+dn: cn=JazzUsers,ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: groupOfNames
+cn: JazzUsers
+member: racfid=BGREEN,profiletype=USER,CN=RACF255,O=IBM,C=RTC
+member: uid=jamsden,ou=users,ou=system
+member: uid=Ben,ou=users,ou=system
+member: uid=Bob,ou=users,ou=system
+member: uid=Dave,ou=users,ou=system
+member: uid=Marco,ou=users,ou=system
+
+dn: ou=Pet Store,ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: organizationalUnit
+ou: Pet Store
+
+dn: ou=Licenses,ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: organizationalUnit
+ou: Licenses
+
+dn: cn=Rational solution for Collaborative Lifecycle Management - Contributo
+ r-Floating (Unlocked),ou=Licenses,ou=https://ce4iot.rtp.raleigh.ibm.com:944
+ 3/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: groupOfNames
+cn: Rational solution for Collaborative Lifecycle Management - Contributor-F
+ loating (Unlocked)
+member: uid=jamsden,ou=users,ou=system
+member: uid=Bob,ou=users,ou=system
+member: uid=Dave,ou=users,ou=system
+
+dn: cn=Rational Rhapsody Design Manager - Design Manager-Floating\ ,ou=Licen
+ ses,ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: groupOfNames
+cn:: UmF0aW9uYWwgUmhhcHNvZHkgRGVzaWduIE1hbmFnZXIgLSBEZXNpZ24gTWFuYWdlci1GbG9
+ hdGluZ1wg
+cn:: UmF0aW9uYWwgUmhhcHNvZHkgRGVzaWduIE1hbmFnZXIgLSBEZXNpZ24gTWFuYWdlci1GbG9
+ hdGluZyA=
+member: uid=no member
+
+dn: ou=JKE Banking (Change Management),ou=https://ce4iot.rtp.raleigh.ibm.com
+ :9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: organizationalUnit
+ou: JKE Banking (Change Management)
+
+dn: ou=Release Engineering,ou=JKE Banking (Change Management),ou=https://ce4
+ iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: organizationalUnit
+ou: Release Engineering
+
+dn: cn=Administrators,ou=Release Engineering,ou=JKE Banking (Change Manageme
+ nt),ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: groupOfUniqueNames
+cn: Administrators
+uniquemember: cn=blank
+
+dn: cn=Members,ou=Release Engineering,ou=JKE Banking (Change Management),ou=
+ https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: groupOfUniqueNames
+cn: Members
+uniquemember: cn=no member
+
+dn: cn=Administrators,ou=JKE Banking (Change Management),ou=https://ce4iot.r
+ tp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: groupOfUniqueNames
+cn: Administrators
+uniquemember: uid=Marco,ou=users,ou=system
+
+dn: cn=Members,ou=JKE Banking (Change Management),ou=https://ce4iot.rtp.rale
+ igh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: groupOfUniqueNames
+cn: Members
+uniquemember: uid=Marco,ou=users,ou=system
+uniquemember: uid=Bob,ou=users,ou=system
+uniquemember: uid=Dave,ou=users,ou=system
+
+dn: ou=Process Roles,ou=JKE Banking (Change Management),ou=https://ce4iot.rt
+ p.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: organizationalRole
+cn: Process Roles
+ou: Process Roles
+
+dn: cn=Team Member,ou=Process Roles,ou=JKE Banking (Change Management),ou=ht
+ tps://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: groupOfNames
+cn: Team Member
+member: uid=Bob,ou=users,ou=system
+member: uid=Ben,ou=users,ou=system
+member: uid=Dave,ou=users,ou=system
+member: uid=Marco,ou=users,ou=system
+
+dn: cn=Stakeholder,ou=Process Roles,ou=JKE Banking (Change Management),ou=ht
+ tps://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: groupOfNames
+cn: Stakeholder
+member: cn=no member
+
+dn: cn=Scrum Master,ou=Process Roles,ou=JKE Banking (Change Management),ou=h
+ ttps://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: groupOfNames
+cn: Scrum Master
+member: uid=jamsden,ou=users,ou=system
+
+dn: cn=Product Owner,ou=Process Roles,ou=JKE Banking (Change Management),ou=
+ https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: groupOfNames
+cn: Product Owner
+member: cn=no member
+
+dn: ou=Business Recovery Matters,ou=JKE Banking (Change Management),ou=https
+ ://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: organizationalUnit
+ou: Business Recovery Matters
+
+dn: cn=Administrators,ou=Business Recovery Matters,ou=JKE Banking (Change Ma
+ nagement),ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: groupOfUniqueNames
+cn: Administrators
+uniquemember: uid=Marco,ou=users,ou=system
+
+dn: cn=Members,ou=Business Recovery Matters,ou=JKE Banking (Change Managemen
+ t),ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: groupOfUniqueNames
+cn: Members
+uniquemember: uid=Bob,ou=users,ou=system
+uniquemember: uid=Dave,ou=users,ou=system
+uniquemember: uid=Marco,ou=users,ou=system
+
+dn: ou=Process Roles,ou=Business Recovery Matters,ou=JKE Banking (Change Man
+ agement),ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: organizationalRole
+cn: Process Roles
+ou: Process Roles
+
+dn: cn=Team Member,ou=Process Roles,ou=Business Recovery Matters,ou=JKE Bank
+ ing (Change Management),ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=R
+ TC,O=IBM
+objectclass: top
+objectclass: groupOfNames
+cn: Team Member
+member: uid=Bob,ou=users,ou=system
+member: uid=Ben,ou=users,ou=system
+member: uid=Dave,ou=users,ou=system
+member: uid=Marco,ou=users,ou=system
+
+dn: cn=Stakeholder,ou=Process Roles,ou=Business Recovery Matters,ou=JKE Bank
+ ing (Change Management),ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=R
+ TC,O=IBM
+objectclass: top
+objectclass: groupOfNames
+cn: Stakeholder
+member: cn=no member
+
+dn: cn=Scrum Master,ou=Process Roles,ou=Business Recovery Matters,ou=JKE Ban
+ king (Change Management),ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=
+ RTC,O=IBM
+objectclass: top
+objectclass: groupOfNames
+cn: Scrum Master
+member: uid=jamsden,ou=users,ou=system
+
+dn: cn=Product Owner,ou=Process Roles,ou=Business Recovery Matters,ou=JKE Ba
+ nking (Change Management),ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou
+ =RTC,O=IBM
+objectclass: top
+objectclass: groupOfNames
+cn: Product Owner
+member: cn=no member
+
+dn: ou=Energy Efficiency Matters,ou=JKE Banking (Change Management),ou=https
+ ://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: organizationalUnit
+ou: Energy Efficiency Matters
+
+dn: cn=Members,ou=Energy Efficiency Matters,ou=JKE Banking (Change Managemen
+ t),ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: groupOfUniqueNames
+cn: Members
+uniquemember: cn=no member
+
+dn: cn=Administrators,ou=Energy Efficiency Matters,ou=JKE Banking (Change Ma
+ nagement),ou=https://ce4iot.rtp.raleigh.ibm.com:9443/ccm,ou=RTC,O=IBM
+objectclass: top
+objectclass: groupOfUniqueNames
+cn: Administrators
+uniquemember: cn=blank
+
