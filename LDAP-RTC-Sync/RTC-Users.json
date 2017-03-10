@@ -1,0 +1,63 @@
+{
+    "LDAPConnection": {
+        "URI": "ldap://mvs255.rtp.raleigh.ibm.com",
+        "adminId": "racfid=BGREEN,profiletype=USER,CN=RACF255,O=IBM,C=RTC",
+        "adminPassword": "rtc2fun"
+    },
+    "RTCServers": [
+        {
+            "serverURI": "https://ce4iot.rtp.raleigh.ibm.com:9443/ccm",
+            "admin": "jamsden",
+            "password": "Matjas3cha",
+            "JazzAdmins": "racfid=JAZPADMN,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+            "JazzUsers": "racfid=JAZZGRP,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+            "Licenses": [
+                {"Rational DOORS Next Generation - Analyst-Floating (Unlocked)": "racfid=NDGFLT,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                {"Rational Team Concert - Developer-Floating (Unlocked)": "racfid=RTCFLT,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
+            ],
+            "Project Areas": [
+                {
+                    "name": "Pet Store Formal",
+                    "Administrators": "racfid=XPETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                    "Members": "racfid=XPETB,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                    "Process Roles": [
+                        {"Analyst": "racfid=APETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                        {"Developer": "racfid=OPETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                        {"Project Manager": "racfid=APETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                        {"Tester": "racfid=TJKEK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
+                    ]
+                },
+                {
+                    "name": "JKE Banking (Change Management)",
+                    "Administrators": "racfid=XJKEK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                    "Members": "racfid=XJKEB,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                    "Process Roles": [
+                        {"Product Owner": "racfid=APETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                        {"Scrum Master": "racfid=OPETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                        {"Stakeholder": "racfid=APETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                        {"Team Member": "racfid=TJKEK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
+                    ],
+                    "Team Areas": [
+                        {
+                            "name": "Business Recovery Matters",
+                            "Process Roles": [
+                                {"Product Owner": "racfid=APETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                                {"Scrum Master": "racfid=OPETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                                {"Stakeholder": "racfid=APETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                                {"Team Member": "racfid=TJKEK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
+                            ],
+                            "Administrators": "racfid=XJKEK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                            "Members": "racfid=XJKEB,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"
+                        },
+                        {
+                            "name": "Energy Efficiency Matters"
+                        },
+                        {
+                            "name": "Release Engineering"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
