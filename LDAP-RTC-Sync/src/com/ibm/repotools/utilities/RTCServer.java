@@ -68,115 +68,22 @@ public class RTCServer {
 	}
 
 		
-	/** Synchronize the LDAP users for this RTC server
+	/** Synchronize the LDAP users for this RTC server. This implementation use
+	 * the existing RTC userSync implementation to properly handle the repository permissions.
+	 * 
+	 * Note: IContributor does not provide access to a user's repository permissions. These
+	 * are only handled by the com.ibm.team.repository.common.service.IExternalUserRegistryService 
+	 * synchronizeUsers() method.
 	 *  
 	 * @throws TeamRepositoryException
 	 * @throws NamingException
 	 */
 	public void syncServerUsers() throws TeamRepositoryException, NamingException {
 		if (rtcServer == null) return;
-		// Get all the RTC users for this server
-		List<IContributor> allUsers = rtc.getUsers();
-		syncUsers("JazzAdmins", allUsers);
-		syncUsers("JazzUsers", allUsers);		
 		syncLicenses();
 		syncProjectAreas();
 	}
 	
-	private void synUsers(String repoPermission) {
-		// Get the LDAP group capturing the users who should have this repository permission
-		String racfGroupDN = (String)rtcServer.get(repoPermission);
-		if (racfGroupDN == null) {
-			log.warn("LDAP group for "+repoPermission+" is not specified in the configuration file");
-			return;
-		}
-		try {
-			// get the users from the LDAP group
-			NamingEnumeration ldapUsers = ldapConnection.getContext().getAttributes(racfGroupDN).get("racfgroupuserids").getAll();
-			if (ldapUsers == null) {
-				log.error("LDAP group: "+racfGroupDN+" was not found");
-				return;
-			}
-			
-			log.info("\tSyncing "+repoPermission+" users from LDAP group: "+racfGroupDN);
-			
-			// 
-			
-			while (ldapUsers.hasMoreElements()) {
-				// for each LDAP user, get their updated information if any and sync with the RTC server
-				String userDN = (String)ldapUsers.next();
-				Attributes ldapUser = ldapConnection.getContext().getAttributes(userDN);
-				if (ldapUser == null) {
-					log.error("LDAP user: "+userDN+" is not defined in LDAP");
-					continue;
-				}
-				String userId = ldapUser.get("racfid").get().toString().toLowerCase();  // RACF are all upper, Jazz are usually all lower
-				
-				// TODO: is the user's name racfprogrammername or something else?
-				Attribute rawName = ldapUser.get("racfprogrammername");
-				String name =  (rawName != null)? name = rawName.get().toString(): "UNKNOWN";
-				Attribute rawEmail = ldapUser.get("racfemail");
-				String email = (rawEmail != null)? email = rawEmail.get().toString(): "UNKNOWN";
-
-				// TODO: Get all the users, create a usersToArchive map, and either add, update or remove the user from the server
-				IContributor contributor = rtc.addUser(userId, name, email);
-				// TODO: set the user's repository privileges
-			}
-		} catch (NamingException e) {
-			log.error("LDAP group: "+racfGroupDN+" does not exist");;
-		}				
-	}
-	
-	/** Synchronize the LDAP users with the RTC users given the RTC repository permission. 
-	 *   * Adds new users defined in the corresponding LDAP group
-	 *   * Updates the user name and email address of existing users if needed
-	 *   * Archives users that were removed from the LDAP group
-	 *   
-	 * @param repoPermission RTC repository permission (JazzAdmins, JazzUsers, etc.)
-	 * @param serverUsers the existing RTC users for this server
-	 * @throws NamingException
-	 * 
-	 * TODO: Finish RTCServer.syncUsers implementation
-	 * @throws TeamRepositoryException 
-	 */
-	private void syncUsers(String repoPermission, List<IContributor> serverUsers) throws NamingException, TeamRepositoryException {
-		String racfGroupDN = (String)rtcServer.get(repoPermission);
-		if (racfGroupDN == null) {
-			log.warn("LDAP group for "+repoPermission+" is not specified");
-			return;
-		}
-		try {
-			// get the users from the LDAP group
-			NamingEnumeration admins = ldapConnection.getContext().getAttributes(racfGroupDN).get("racfgroupuserids").getAll();
-			if (admins == null) {
-				log.error("LDAP group: "+racfGroupDN+" was not found");
-				return;
-			}
-			log.info("\tSyncing "+repoPermission+" users from LDAP group: "+racfGroupDN);
-			while (admins.hasMoreElements()) {
-				String userDN = (String)admins.next();
-				// TODO: RTCServer.syncUsers needs to sync users by repository permissions - finish this implementation
-				Attributes ldapUser = ldapConnection.getContext().getAttributes(userDN);
-				if (ldapUser == null) {
-					log.error("LDAP user: "+userDN+" is not defined in LDAP");
-					continue;
-				}
-				String userId = ldapUser.get("racfid").get().toString().toLowerCase();  // RACF are all upper, Jazz are usually all lower
-				
-				// TODO: is the user's name racfprogrammername or something else?
-				Attribute rawName = ldapUser.get("racfprogrammername");
-				String name =  (rawName != null)? name = rawName.get().toString(): "UNKNOWN";
-				Attribute rawEmail = ldapUser.get("racfemail");
-				String email = (rawEmail != null)? email = rawEmail.get().toString(): "UNKNOWN";
-
-				// TODO: Get all the users, create a usersToArchive map, and either add, update or remove the user from the server
-				IContributor contributor = rtc.addUser(userId, name, email);
-				// TODO: set the user's repository privileges
-			}
-		} catch (NamingException e) {
-			log.error("LDAP group: "+racfGroupDN+" does not exist");;
-		}				
-	}
 	
 	/** Allocates client access licenses based on membership in an LDAP group
 	 * 
@@ -184,7 +91,7 @@ public class RTCServer {
 	 */
 	public void syncLicenses() {
 		if (rtcServer == null) return;
-		log.info("Allocating licenses");
+		log.info("Assigning client access licenses");
 	}
 	
 	/** Synchronize the project area Administrators, Members and Process Roles for this server

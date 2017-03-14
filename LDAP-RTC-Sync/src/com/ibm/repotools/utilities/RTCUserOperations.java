@@ -13,9 +13,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.slf4j.Logger;
 
 import com.ibm.team.process.client.IProcessClientService;
+import com.ibm.team.process.client.workingcopies.IProcessAreaWorkingCopy;
 import com.ibm.team.process.common.IProcessArea;
 import com.ibm.team.repository.client.IContributorManager;
-import com.ibm.team.repository.client.IExternalUserRegistryManager;
 import com.ibm.team.repository.client.IItemManager;
 import com.ibm.team.repository.client.ILoginHandler2;
 import com.ibm.team.repository.client.ILoginInfo2;
@@ -38,7 +38,6 @@ public class RTCUserOperations {
 	private ITeamRepository teamRepository = null;
 	private IProcessClientService processClient = null;
 	private IContributorManager contributorManager = null;
-	private IExternalUserRegistryManager userRegistryManager = null;
 	private IProgressMonitor progressMonitor = new NullProgressMonitor();
 
 	
@@ -66,8 +65,6 @@ public class RTCUserOperations {
 			processClient = (IProcessClientService)teamRepository.getClientLibrary(IProcessClientService.class);
 
 			contributorManager = teamRepository.contributorManager();
-			userRegistryManager = teamRepository.externalUserRegistryManager();
-
 		} catch (Exception e) {
 			log.error("Unable to login to: " + server.getServerURI());			
 			e.printStackTrace();
@@ -115,7 +112,8 @@ public class RTCUserOperations {
 	public List<IContributor> getUsers() throws TeamRepositoryException {
 		return teamRepository.contributorManager().fetchAllContributors(progressMonitor);
 	}
-
+	
+	
 	/** Get an RTC ProjectArea (called a ProcessArea in the RTC SDK).
 	 * 
 	 * @param projectAreaName
@@ -207,17 +205,25 @@ public class RTCUserOperations {
 	 * @param name updated name
 	 * @param email updated email address
 	 * @return the (possibly) updated contributor
+	 * @throws TeamRepositoryException 
 	 */
-	public IContributor addMember(IProcessArea pa, String memberRole, IContributor contributor, String name, String email) {
-		if (contributor == null) return contributor; // TODO: this won't be needed once the users are added to the server
-		if (memberRole.equals("Administrators")) {
-			pa.addAdministrator((IContributorHandle)contributor.getItemHandle());
-		} else {
-			pa.addMember((IContributorHandle)contributor.getItemHandle());
+	public IContributorHandle addMember(IProcessAreaWorkingCopy pa, String memberRole, String userId) {
+		IContributorHandle contributorHandle = null;
+		try {
+			contributorHandle = contributorManager.fetchContributorByUserId(userId, progressMonitor);
+			if (contributorHandle == null) {
+				log.error("User: "+userId+" is not a member of this server");
+				return null;
+			}
+			if (memberRole.equals("Administrators")) {
+				pa.getUnderlyingProcessArea().addAdministrator(contributorHandle);
+			} else {
+				pa.getUnderlyingProcessArea().addMember(contributorHandle);
+			}
+		} catch (TeamRepositoryException e) {
+			log.error("User: "+userId+" is not a member of this server");
 		}
-		// the member may also have their name and email updated
-		updateMember(pa, memberRole, contributor, name, email);
-		return contributor;
+		return contributorHandle;
 	}
 	
 	/** Update a project or team area administrator or member's name and/or email address
@@ -249,11 +255,11 @@ public class RTCUserOperations {
 	 * @param memberRolethe role they play, Administrators or Members
 	 * @param member the contributor to remove
 	 */
-	public void removeMember(IProcessArea pa, String memberRole, IContributor member) {
+	public void removeMember(IProcessAreaWorkingCopy pa, String memberRole, IContributor member) {
 		if (memberRole.equals("Administrators")) {
-			pa.addAdministrator((IContributorHandle)member.getItemHandle());
+			pa.getUnderlyingProcessArea().addAdministrator((IContributorHandle)member.getItemHandle());
 		} else {
-			pa.addMember((IContributorHandle)member.getItemHandle());
+			pa.getUnderlyingProcessArea().addMember((IContributorHandle)member.getItemHandle());
 		}
 	}
 	

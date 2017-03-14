@@ -13,14 +13,13 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 
+import com.ibm.team.process.client.IProcessItemService;
+import com.ibm.team.process.client.workingcopies.IProcessAreaWorkingCopy;
 import com.ibm.team.process.common.IProcessArea;
-import com.ibm.team.repository.client.ITeamRepository;
 import com.ibm.team.repository.common.IContributor;
 import com.ibm.team.repository.common.TeamRepositoryException;
 
@@ -39,9 +38,6 @@ public class TeamArea {
 	private RTCUserOperations rtc = null;  // for access the RTC server
 	private Logger log = null;  // errors, warnings and information
 	Collection<TeamArea> children = null;  // child team areas if any
-
-	private ITeamRepository repo = null;
-	private IProgressMonitor progressMonitor = new NullProgressMonitor();
 	
 
 	/** Construct a representation of a "Team Areas" instance from the configuration file.
@@ -56,7 +52,6 @@ public class TeamArea {
 		this.ldapConnection = ldapConnection;
 		this.rtc = rtc;
 		this.log = log;
-		this.repo = rtc.getTeamRepository();
 		
 		children = new ArrayList<TeamArea>();
 		
@@ -86,14 +81,18 @@ public class TeamArea {
 	public void syncUsers() throws NamingException {
 		try {
 			IProcessArea pa = rtc.getProjectArea(getName());
+
+			IProcessItemService service = (IProcessItemService)rtc.getTeamRepository().getClientLibrary(IProcessItemService.class);
+			IProcessAreaWorkingCopy paWc = (IProcessAreaWorkingCopy)service.getWorkingCopyManager().createPrivateWorkingCopy(pa);
+			
 			// Administrators
-			syncUsers("Administrators", pa);
+			syncUsers("Administrators", paWc);
 			
 			// Members
-			syncUsers("Members", pa);
+			syncUsers("Members", paWc);
 			
 			// Process Roles
-			syncProcessRoles(pa);
+			syncProcessRoles(paWc);
 			
 			// Synchronize the child Team Areas
 			Iterator<TeamArea> tas = children.iterator();
@@ -101,6 +100,8 @@ public class TeamArea {
 				TeamArea ta = tas.next();
 				ta.syncUsers();
 			}
+			// TODO: Save the modified project or team area
+			paWc.save(null);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		} catch (TeamRepositoryException e) {
@@ -112,16 +113,19 @@ public class TeamArea {
 	}
 
 
-	/**
+	/** Synchronize the users who are administrators or members of this project or team area.
+	 * It is assumed that the user is already a member of the JTS, and has sufficient repository permissions.
+	 * This part of LDAP-RTC user synchronization is done by the repotools_syncUsers command.
+	 * 
 	 * @param memberRole  of a user in an RTC project area: Administrators or Members
 	 * @param pa the RTC project area (called an IProcessArea in the RTC SDK)
 	 * 
 	 * @throws NamingException
 	 * @throws TeamRepositoryException 
 	 */
-	public void syncUsers(String memberRole, IProcessArea pa) throws NamingException, TeamRepositoryException {
+	public void syncUsers(String memberRole, IProcessAreaWorkingCopy pa) throws NamingException, TeamRepositoryException {
 		String racfGroupDN = (String)ta.get(memberRole);
-		log.info("\tSyncing "+memberRole+" users from LDAP group: "+racfGroupDN);
+		log.info("Syncing "+memberRole+" users from LDAP group: "+racfGroupDN);
 		if (racfGroupDN == null) {
 			log.warn("LDAP group for "+memberRole+" is not specified");
 			return;
@@ -131,7 +135,7 @@ public class TeamArea {
 			NamingEnumeration ldapUsers = ldapConnection.getContext().getAttributes(racfGroupDN).get("racfgroupuserids").getAll();
 
 			// Get the current RTC users based on membership in the project or team area
-			Map<String, IContributor> rtcMembers = rtc.getMembers(pa, memberRole);
+			Map<String, IContributor> rtcMembers = rtc.getMembers(pa.getUnderlyingProcessArea(), memberRole);
 			Map<String, IContributor> membersToRemove = new HashMap<String, IContributor>(rtcMembers);
 			
 			while (ldapUsers.hasMoreElements()) {
@@ -141,23 +145,18 @@ public class TeamArea {
 					log.error("LDAP user: "+userDN+" is not defined in LDAP");
 					continue;
 				}
-				String userId = ldapUser.get("racfid").get().toString().toLowerCase();  // RACF are all upper, Jazz are usually all lower
+				String userId = ldapUser.get("racfid").get().toString();  
 				
 				// TODO: is the user's name racfprogrammername or something else?
 				Attribute rawName = ldapUser.get("racfprogrammername");
 				String name =  (rawName != null)? name = rawName.get().toString(): "UNKNOWN";
-				Attribute rawEmail = ldapUser.get("racfemail");
-				String email = (rawEmail != null)? email = rawEmail.get().toString(): "UNKNOWN";
 				
 				// Examine the RTC users, adding, updating or marking for removal is needed
 				if (!rtcMembers.containsKey(userId)) {
 					// Add a new user
-					log.info("Adding new user: "+userId+" ("+name+"), email: "+email+" to: "+pa.getName());
-					rtc.addMember(pa, memberRole, rtcMembers.get(userId), name, email);
+					log.info("Adding new user: "+userId+" ("+name+") to: "+pa.getName());
+					rtc.addMember(pa, memberRole, userId);
 				} else {
-					// Update an existing user
-					log.info("Updating user: "+userId+" ("+name+"), email: "+email+" in: "+pa.getName());
-					rtc.updateMember(pa, memberRole, rtcMembers.get(userId), name, email);
 					membersToRemove.remove(userId); // don't remove this member
 				}
 				
@@ -181,9 +180,9 @@ public class TeamArea {
 	 * 
 	 * TODO: implement the syncProcessRole method
 	 */
-	public void syncProcessRoles(IProcessArea p) {
+	public void syncProcessRoles(IProcessAreaWorkingCopy p) {
 		ta.get("Process Roles");
-		log.info("\tSyncing process roles for "+p.getName()+" LDAP group: ");
+		log.info("Syncing process roles for "+p.getName()+" LDAP group: ");
 
 	}
 }

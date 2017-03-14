@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><server>
+<!--
+    Licensed Materials - Property of IBM
+    (c) Copyright IBM Corporation 2015. All Rights Reserved.
+    
+    Note to U.S. Government Users Restricted Rights:  
+    Use, duplication or disclosure restricted by GSA ADP Schedule 
+    Contract with IBM Corp. 
+ -->
+    <featureManager>
+        <feature>appSecurity-2.0</feature>
+    </featureManager>
+
+    <basicRegistry id="Jazz" realm="Jazz">
+        <user name="build" password="{aes}AP65/pia0kmovL5vUH87RlHmCfsViIdgeVSKW5SwuUSq"/>
+        <user name="tammy" password="{aes}AGmi85EV99yiwRmlo2bR3LPXa6ugDr+0b/OaJ7drtuzU"/>
+        <user name="sally" password="{aes}"/>
+        <user name="rebecca" password="{aes}AMeddQBMzTVIxAEXApglYwu4xelPJ1DCRu4lSF+/EuQ2"/>
+        <user name="ursula" password="{aes}ALtbRhVmGnaZhxKO80LJxmF8IpKVkXWuXIqjtyBUhY9e"/>
+        <user name="marco" password="{aes}AN63rXp5beWrAW/bh//02xHcrQM69rjl/uXjDdK7dSTe"/>
+        <user name="dave" password="{aes}AJUpueYaWW4zkSjM4QkqxaWmXic5A6l4Jf8QDG8N0Z2J"/>
+        <user name="deb" password="{aes}AJPsStsCM2SaMxr7gmWfI2EY55QlAafXNbJ4lSasHHhg"/>
+        <user name="tanuj" password="{aes}ABwY8FhirU5sQ6peA5EELCJ7ghmDzM6xw0Bs4AJxlmOg"/>
+        <user name="al" password="{aes}ALe9Ia6tOiZ9jDaLKmUvOowDQr0I6U/MuaCdNL1n524P"/>
+        <user name="curtis" password="{aes}AN8lhb9kRppfwfiC0T3J1iIKn0kdAJpihoD4CsmvBRzB"/>
+        <user name="bob" password="{aes}ANYFxMv6cOyBNr/our4I5mOJMz9x6MAlmuOuhkK4kPGA"/>
+        <user name="ralph" password="{aes}AIzNHo7KoA28J9QsfOeLs0w4yQUZZDjvC+3qQ2UdrFOf"/>
+        <user name="myadmin" password="{aes}AAMNoUIJJZt7WYVxyv9DX3u5z4s2+yosKRLWvRt3RfJS"/>
+        <user name="ADMIN" password="{aes}AOxsQMoce829JJacYG4x3ga87N+UljtW8wNM2oc+QioN"/>
+        <group name="JazzAdmins">
+            
+        <member name="myadmin"/>
+        <member name="ralph"/>
+        </group>
+        <group name="JazzProjectAdmins">
+        </group>
+        <group name="JazzGuests">
+        </group>
+        <group name="JazzUsers">
+        <member name="ralph"/>
+        <member name="bob"/>
+        <member name="curtis"/>
+        <member name="al"/>
+        <member name="tanuj"/>
+        <member name="deb"/>
+        <member name="dave"/>
+        <member name="marco"/>
+        <member name="ursula"/>
+        <member name="rebecca"/>
+        <member name="sally"/>
+        <member name="tammy"/>
+        <member name="build"/>
+        </group>
+    </basicRegistry>
+</server>
