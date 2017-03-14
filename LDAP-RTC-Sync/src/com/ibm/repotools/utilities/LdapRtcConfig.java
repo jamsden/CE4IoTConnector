@@ -14,12 +14,23 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 
+/** A class for abstracting and reading the LDAP - RTC user synchronization configuration file.
+ * 
+ * @author jamsden
+ *
+ */
 public class LdapRtcConfig {
 
 	private JSONObject obj = null;
 	private LdapConnection ldapConnection = null;
 	private Logger log = null;
 
+	/** Reads and parses the configuration file and readies it for subsequent uses.
+	 * 
+	 * @param configFile - The LDAP-RTC user configuration JSON file name
+	 * 
+	 * @param log
+	 */
 	public LdapRtcConfig(String configFile, Logger log) {
 		this.log = log;
 		JSONParser parser = new JSONParser();
@@ -35,6 +46,10 @@ public class LdapRtcConfig {
 	    }
 	}
 	
+	/** Get the LDAP connection from the LDAP-RTC user sync configuration file
+	 * 
+	 * @return a new LdapConnection that is ready for access.
+	 */
 	public LdapConnection getLDAPConnection() {
 		if (ldapConnection == null) {
             ldapConnection = new LdapConnection(obj);
@@ -42,6 +57,10 @@ public class LdapRtcConfig {
 		return ldapConnection;
 	}
 	
+	/** Get the RTC server elements defined in the configuration file
+	 * 
+	 * @return Collection of RTC servers specified in the configuration file
+	 */
 	public Collection<RTCServer> getServers() {
 		List<RTCServer> servers = new ArrayList<RTCServer>();
 		Iterator<JSONObject> srvs = ((JSONArray)obj.get("RTCServers")).iterator();
@@ -50,5 +69,4 @@ public class LdapRtcConfig {
 		}
 		return servers;
 	}
-
 }

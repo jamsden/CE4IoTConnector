@@ -9,6 +9,11 @@ import javax.naming.ldap.InitialLdapContext;
 
 import org.json.simple.JSONObject;
 
+/** Supports the connection to an LDAP server as specified in the configuration file.
+ * 
+ * @author jamsden
+ *
+ */
 public class LdapConnection {
 	private JSONObject obj = null;
 	private JSONObject ldapConnection = null;
@@ -47,6 +52,10 @@ public class LdapConnection {
 		return (String)ldapConnection.get("adminPassword");
 	}
 	
+	/** The DirContext can be used to access this LDAP connection.
+	 * 
+	 * @return the DirContext
+	 */
 	public DirContext getContext() {
 		return ctx;
 	}
