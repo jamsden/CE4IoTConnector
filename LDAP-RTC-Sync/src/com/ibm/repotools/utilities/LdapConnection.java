@@ -44,12 +44,12 @@ public class LdapConnection {
 	
 	public String getAdminId() {
 		if (obj == null) return null;
-		return (String)ldapConnection.get("adminId");
+		return (String)ldapConnection.get("userId");
 	}
 	
 	public String getAdminPassword() {
 		if (obj == null) return null;
-		return (String)ldapConnection.get("adminPassword");
+		return (String)ldapConnection.get("password");
 	}
 	
 	/** The DirContext can be used to access this LDAP connection.

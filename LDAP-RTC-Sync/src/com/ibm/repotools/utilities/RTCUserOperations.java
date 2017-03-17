@@ -4,6 +4,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,9 +14,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.slf4j.Logger;
 
+import com.ibm.team.process.client.IClientProcess;
 import com.ibm.team.process.client.IProcessClientService;
-import com.ibm.team.process.client.workingcopies.IProcessAreaWorkingCopy;
+import com.ibm.team.process.client.IProcessItemService;
 import com.ibm.team.process.common.IProcessArea;
+import com.ibm.team.process.common.IProcessItem;
+import com.ibm.team.process.common.IRole;
 import com.ibm.team.repository.client.IContributorManager;
 import com.ibm.team.repository.client.IItemManager;
 import com.ibm.team.repository.client.ILoginHandler2;
@@ -22,8 +27,11 @@ import com.ibm.team.repository.client.ILoginInfo2;
 import com.ibm.team.repository.client.ITeamRepository;
 import com.ibm.team.repository.client.TeamPlatform;
 import com.ibm.team.repository.client.login.UsernameAndPasswordLoginInfo;
+import com.ibm.team.repository.client.util.IClientLibraryContext;
 import com.ibm.team.repository.common.IContributor;
 import com.ibm.team.repository.common.IContributorHandle;
+import com.ibm.team.repository.common.IContributorLicenseType;
+import com.ibm.team.repository.common.ILicenseAdminService;
 import com.ibm.team.repository.common.TeamRepositoryException;
 
 /** Provides an implementation of the RTC operations needed by LDAP - RTC user synchronization
@@ -39,7 +47,9 @@ public class RTCUserOperations {
 	private IProcessClientService processClient = null;
 	private IContributorManager contributorManager = null;
 	private IProgressMonitor progressMonitor = new NullProgressMonitor();
-
+	private IProcessItemService itemService = null;
+	private ILicenseAdminService licenseAdminService = null;
+	private IContributorLicenseType[] validContributorLicenseTypes = null;
 	
 	/** Provides the operations needed to sync users for the given RTCServer
 	 * 
@@ -62,9 +72,13 @@ public class RTCUserOperations {
 			teamRepository = TeamPlatform.getTeamRepositoryService().getTeamRepository(server.getServerURI());
 			teamRepository.registerLoginHandler(getLoginHandler(server.getAdmin(), server.getPassword()));
 			teamRepository.login(progressMonitor);
+			
+			licenseAdminService = (ILicenseAdminService) ((IClientLibraryContext) teamRepository).getServiceInterface(ILicenseAdminService.class);
+			validContributorLicenseTypes = licenseAdminService.getLicenseTypes();
 			processClient = (IProcessClientService)teamRepository.getClientLibrary(IProcessClientService.class);
-
 			contributorManager = teamRepository.contributorManager();
+			itemService = (IProcessItemService) teamRepository.getClientLibrary(IProcessItemService.class);
+			
 		} catch (Exception e) {
 			log.error("Unable to login to: " + server.getServerURI());			
 			e.printStackTrace();
@@ -105,8 +119,6 @@ public class RTCUserOperations {
 	/**
 	 * @return a List of the users registered with this server
 	 * 
-	 * TODO: Need to be able to get users by repository permissions, not just all users
-	 * 
 	 * @throws TeamRepositoryException
 	 */
 	public List<IContributor> getUsers() throws TeamRepositoryException {
@@ -124,19 +136,12 @@ public class RTCUserOperations {
 	 */
 	public IProcessArea getProjectArea(String projectAreaName) throws TeamRepositoryException, UnsupportedEncodingException, URISyntaxException {
 		URI uri = new URI(URLEncoder.encode(projectAreaName, "UTF-8").replaceAll("\\+", "%20"));
-		IProcessClientService processService = (IProcessClientService)teamRepository.getClientLibrary(IProcessClientService.class);
-		IProcessArea processArea = processService.findProcessArea(uri, IProcessClientService.ALL_PROPERTIES, progressMonitor);
+		IProcessArea processArea = (IProcessArea)processClient.findProcessArea(uri, IProcessClientService.ALL_PROPERTIES, progressMonitor);
+		if (processArea == null) {
+			log.error("Project area "+projectAreaName+" not found.");
+		}
 		return processArea;
 	}
-
-	/** Get a TeamArea within a ProjectArea or another TeamArea
-	 * 
-	 * TODO: Implement getTeamArea using a hierarchical name 
-	 * @param teamAreaName
-	 */
-	public static void getTeamArea(String teamAreaName) {
-	}
-
 
 	/** Add a user to this team server. 
 	 * 
@@ -146,7 +151,6 @@ public class RTCUserOperations {
 	 * @return
 	 * @throws TeamRepositoryException
 	 * 
-	 * TODO: addUser needs to handle the repository permissions
 	 */
 	public IContributor addUser(String userId, String userName, String emailAddress) throws TeamRepositoryException {
 		// Create Item Type Contributor and set its properties
@@ -178,6 +182,13 @@ public class RTCUserOperations {
 		contributor.setArchived(true);
 	}
 	
+
+	/** Get the administrators or members of a project area
+	 * @param pa
+	 * @param memberRole
+	 * @return a Map of the userId, IContributor members
+	 * @throws TeamRepositoryException
+	 */
 	public Map<String, IContributor> getMembers(IProcessArea pa, String memberRole) throws TeamRepositoryException  {
 		Map<String, IContributor> members = new HashMap<String, IContributor>();
 		IContributorHandle[] contributors = null;
@@ -207,18 +218,14 @@ public class RTCUserOperations {
 	 * @return the (possibly) updated contributor
 	 * @throws TeamRepositoryException 
 	 */
-	public IContributorHandle addMember(IProcessAreaWorkingCopy pa, String memberRole, String userId) {
+	public IContributorHandle addMember(IProcessArea pa, String memberRole, String userId) {
 		IContributorHandle contributorHandle = null;
 		try {
 			contributorHandle = contributorManager.fetchContributorByUserId(userId, progressMonitor);
-			if (contributorHandle == null) {
-				log.error("User: "+userId+" is not a member of this server");
-				return null;
-			}
 			if (memberRole.equals("Administrators")) {
-				pa.getUnderlyingProcessArea().addAdministrator(contributorHandle);
+				pa.addAdministrator(contributorHandle);
 			} else {
-				pa.getUnderlyingProcessArea().addMember(contributorHandle);
+				pa.addMember(contributorHandle);
 			}
 		} catch (TeamRepositoryException e) {
 			log.error("User: "+userId+" is not a member of this server");
@@ -255,26 +262,162 @@ public class RTCUserOperations {
 	 * @param memberRolethe role they play, Administrators or Members
 	 * @param member the contributor to remove
 	 */
-	public void removeMember(IProcessAreaWorkingCopy pa, String memberRole, IContributor member) {
+	public void removeMember(IProcessArea pa, String memberRole, IContributor member) {
 		if (memberRole.equals("Administrators")) {
-			pa.getUnderlyingProcessArea().addAdministrator((IContributorHandle)member.getItemHandle());
+			pa.removeAdministrator((IContributorHandle)member.getItemHandle());
 		} else {
-			pa.getUnderlyingProcessArea().addMember((IContributorHandle)member.getItemHandle());
+			pa.removeMember((IContributorHandle)member.getItemHandle());
 		}
 	}
 	
 	
+	/** Get the a list of the process roles (names) for a user in a project area
+	 * @param p the project area
+	 * @param userId the user's ID
+	 * @return a list of role names for the user in this project area
+	 * @throws TeamRepositoryException 
+	 */
+	public List<IRole> getRoleAssignments(IProcessArea p, String userId)  {
+		List<IRole> roleAssignments = new ArrayList<IRole>();
+		try {
+			IContributor user = teamRepository.contributorManager().fetchContributorByUserId(userId, progressMonitor);
+			IClientProcess clientProcess = itemService.getClientProcess(p, null);
 
-	public void addProcessRole(String role, String userId) {
+			roleAssignments.addAll(Arrays.asList(p.getRoleAssignments(user, clientProcess.getRoles(p, null))));
+			return roleAssignments;
+		} catch (TeamRepositoryException e) {
+			log.error("Cannot get process roles for user: "+userId);
+		}
+		return roleAssignments;
 	}
 
-	public void removeProcessRole(String role, String userId) {
+	
+	/** Add a process role to the user in this project area
+	 * @param p the project area
+	 * @param roleID the role to add
+	 * @param userId the user to add the role to
+	 * @throws TeamRepositoryException 
+	 */
+	public void addProcessRole(IProcessArea p, String roleID, String userId)  {
+		try {
+			IContributor user = teamRepository.contributorManager().fetchContributorByUserId(userId, progressMonitor);
+			IRole role = getRole(p, roleID, progressMonitor);
+			p = (IProcessArea) itemService.getMutableCopy(p);
+			p.addRoleAssignments(user, new IRole[] { role });
+
+			itemService.save(new IProcessItem[] { p }, progressMonitor);
+		} catch (TeamRepositoryException e) {
+			log.error("Unable to add process role: "+roleID+" to user: "+userId);
+		}
+	}
+	
+
+	/** Remove a process role from the user in this project area
+	 * @param p the project area
+	 * @param roleID the role to remove
+	 * @param userId the user to add the role to
+	 * @throws TeamRepositoryException 
+	 */
+	public void removeProcessRole(IProcessArea p, String roleID, String userId)  {
+		try {
+			IContributor user = teamRepository.contributorManager().fetchContributorByUserId(userId, progressMonitor);
+			IRole role = getRole(p, roleID, progressMonitor);
+			p = (IProcessArea) itemService.getMutableCopy(p);
+			p.removeRoleAssignments(user, new IRole[] { role });
+
+			itemService.save(new IProcessItem[] { p }, progressMonitor);
+		} catch (TeamRepositoryException e) {
+			log.error("Unable to remove process role: "+roleID+" from user: "+userId);
+		}
 	}
 
-	public void assignClientAccessLicense(String licenseKey, String userId) {
+	/**
+	 * Gets a role by its ID.
+	 * 
+	 * @param area
+	 * @param roleID
+	 * @param monitor
+	 * @return
+	 * @throws TeamRepositoryException
+	 */
+	private IRole getRole(IProcessArea area, String roleID, IProgressMonitor monitor) throws TeamRepositoryException {
+		IRole result = null;
+		IClientProcess clientProcess = itemService.getClientProcess(area, monitor);
+		IRole[] availableRoles = clientProcess.getRoles(area, monitor);
+		for (int i = 0; i < availableRoles.length; i++) {
+			IRole role = availableRoles[i];
+			if (role.getId().equalsIgnoreCase(roleID)) {
+				result = role;
+				break;
+			}
+		}
+		return result;
+	}
+	
+	
+	/** Get the client access licenses assigned to to a user.
+	 * 
+	 * License IDs are identifiers like com.ibm.team.rtc.developer. 
+	 * License Keys are user identifiers made up of product names - name for the license.
+	 * These have to be translated carefully.
+	 * 
+	 * @param userId the user we're getting the assigned licenses for
+	 * @return the client access license ids assigned to this user
+	 */
+	public List<String> getAssignedClientAccessLicenses(String userId) {
+		List<String> assignedLicenses = new ArrayList<String>();
+		try {
+			IContributor user = teamRepository.contributorManager().fetchContributorByUserId(userId, progressMonitor);
+			assignedLicenses.addAll(Arrays.asList(licenseAdminService.getAssignedLicenses(user)));
+		} catch (TeamRepositoryException e) {
+			log.error("Cannot get process roles for user: "+userId);
+		}
+		return assignedLicenses;
+		
+	}
+	
+	/** Get the license ID for a license key
+	 * @param licenseKey (e.g., Rational Team Concert - Developer)
+	 * @return licenseKey (e.g., com.ibm.team.rtc.developer)  
+	 */
+	public String getLicenseId(String licenseKey) {
+		for (int l=0; l<validContributorLicenseTypes.length; l++) {
+			String license = validContributorLicenseTypes[l].getProductName()+" - "+validContributorLicenseTypes[l].getName();
+			if (license.equals(licenseKey)) return validContributorLicenseTypes[l].getId();
+		}
+		log.info("Valid client access license keys are:");
+		for (int l=0; l<validContributorLicenseTypes.length; l++) {
+			log.info("\t"+validContributorLicenseTypes[l].getProductName()+" - "+validContributorLicenseTypes[l].getName());
+		}		
+		return null;
 	}
 
-	public void unassignClientAccessLicense(String licenseKey, String userId) {
+	
+	/** Assign a client access license to this user
+	 * @param licenseId the license ID to assign (e.g., com.ibm.team.rtc.developer)
+	 * @param userId the user who will be assigned the license
+	 */
+	public void assignClientAccessLicense(String licenseId, String userId) {
+		try {
+			IContributor user = teamRepository.contributorManager().fetchContributorByUserId(userId, progressMonitor);
+			licenseAdminService.assignLicense(user, licenseId);
+		} catch (TeamRepositoryException e) {
+			log.error("Unable to assign client access license: "+licenseId+" to user: "+userId);
+		}
+	}
+
+	
+	/** Unassign a client access license from a user
+	 * @param licenseId the license ID to unassign (e.g., com.ibm.team.rtc.developer)
+	 * @param userId the user who will loose the license
+	 */
+	public void unassignClientAccessLicense(String licenseId, String userId) {
+		try {
+			IContributor user = teamRepository.contributorManager().fetchContributorByUserId(userId, progressMonitor);				licenseAdminService.unassignLicense(user, licenseId);
+			licenseAdminService.unassignLicense(user, licenseId);
+		} catch (TeamRepositoryException e) {
+			log.error("Unable to unassign client access license: "+licenseId+" from user: "+userId);
+		}
 	}
 
 }

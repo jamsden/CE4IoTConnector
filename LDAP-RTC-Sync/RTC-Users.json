@@ -1,16 +1,16 @@
 {
     "LDAPConnection": {
         "URI": "ldap://mvs255.rtp.raleigh.ibm.com",
-        "adminId": "racfid=BGREEN,profiletype=USER,CN=RACF255,O=IBM,C=RTC",
-        "adminPassword": "rtc2fun"
+        "userid": "racfid=BGREEN,profiletype=USER,CN=RACF255,O=IBM,C=RTC",
+        "password": "rtc2fun"
     },
     "RTCServers": [
         {"serverURI": "https://ce4iot.rtp.raleigh.ibm.com:9443/ccm",
          "admin": "jamsden",
          "password": "Matjas3cha",
          "Licenses": [
-            {"Rational DOORS Next Generation - Analyst-Floating (Unlocked)": "racfid=DNGFLT,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
-            {"Rational Team Concert - Developer-Floating (Unlocked)": "racfid=RTCFLT,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
+            {"Rational DOORS Next Generation - Analyst-Floating": "racfid=DNGFLT,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+            {"Rational Team Concert - Developer-Floating": "racfid=RTCFLT,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
          ],
         "Project Areas": [
             {"name": "Pet Store Formal",
