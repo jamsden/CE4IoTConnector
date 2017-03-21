@@ -9,12 +9,14 @@ import java.util.Map;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 
+import com.ibm.team.repository.common.IContributor;
 import com.ibm.team.repository.common.TeamRepositoryException;
 
 /** A representation of an RTC server from the LDAP-RTC user sync configuration file
@@ -84,14 +86,15 @@ public class RTCServer {
 	
 	
 	/** Allocates client access licenses based on membership in an LDAP group
+	 * @throws TeamRepositoryException 
 	 * 
 	 */
-	public void syncLicenses() {
+	public void syncLicenses() throws TeamRepositoryException {
 		if (serverObject == null) return;
 		log.info("Assigning client access licenses for: "+getServerURI());
 		
 		// Collect the desired licenses for each userId as specified in the LDAP groups in the config file
-		Map<String, List<String>> desireLicenses = new HashMap<String, List<String>>();
+		Map<String, List<String>> desiredLicenses = new HashMap<String, List<String>>();
 		JSONArray licenseObjects =  (JSONArray)serverObject.get("Licenses");
 		if (licenseObjects == null || licenseObjects.size() == 0) {
 			log.warn("No Licenses were specified for "+getServerURI());
@@ -105,7 +108,9 @@ public class RTCServer {
 			String racfGroupDN = (String)license.get(licenseId);
 			// the members of this group should be assigned client access license key licenseId
 			try {
-				NamingEnumeration ldapUsers = ldapConnection.getContext().getAttributes(racfGroupDN).get("racfgroupuserids").getAll();
+				Attribute groupIds = ldapConnection.getContext().getAttributes(racfGroupDN).get("racfgroupuserids");
+				if (groupIds==null) continue; // no members in the group, nothing to do
+				NamingEnumeration ldapUsers = groupIds.getAll();
 				while (ldapUsers.hasMoreElements()) {
 					String userDN = (String)ldapUsers.next();
 					Attributes ldapUser = ldapConnection.getContext().getAttributes(userDN);
@@ -114,12 +119,12 @@ public class RTCServer {
 						continue;
 					}
 					String userId = ldapUser.get("racfid").get().toString();
-					if (desireLicenses.containsKey(userId)) {
-						desireLicenses.get(userId).add(licenseId);
+					if (desiredLicenses.containsKey(userId)) {
+						desiredLicenses.get(userId).add(licenseId);
 					} else {
 						List<String> roles = new ArrayList<String>();
 						roles.add(licenseId);
-						desireLicenses.put(userId, roles);
+						desiredLicenses.put(userId, roles);
 					}
 
 				}
@@ -127,30 +132,34 @@ public class RTCServer {
 				log.error("LDAP group: "+racfGroupDN+" does not exist");;
 			}
 		}
-		// Next get the client access license keys the user currently has allocated
+		// Next get the client access license keys the users currently have allocated
+		// Only process licenses for the users that are defined in the LDAP group
+		// Leave the existing licenses that are not managed by any LDAP group alone
 		Map<String, List<String>> actualLicenses = new HashMap<String, List<String>>();
-		Iterator<String> users = desireLicenses.keySet().iterator();
-		while (users.hasNext()) {
-			String user = users.next();
+		Iterator<String> contributors = desiredLicenses.keySet().iterator();
+		while (contributors.hasNext()) {
+			String user = contributors.next();
 			actualLicenses.put(user, rtc.getAssignedClientAccessLicenses(user));
 		}
 		
 		// Now sync the desired and actual licenses
-		users = desireLicenses.keySet().iterator();
+		Iterator<String> users = desiredLicenses.keySet().iterator();
 		while (users.hasNext()) {
 			String user = users.next();
 			List<String> licensesToRemoveForUser = actualLicenses.get(user);
-			Iterator<String> desiredLicensesForUser = desireLicenses.get(user).iterator();
-			while (desiredLicensesForUser.hasNext()) {
-				String desiredLicense = desiredLicensesForUser.next();
-				String desiredLicenseId = rtc.getLicenseId(desiredLicense);
-				if (!actualLicenses.get(user).contains(desiredLicenseId)) {
-					// User doesn't play the desired role, add it
-					log.info("Adding client access license "+desiredLicense+" to user "+user+" in server "+getServerURI());
-					rtc.assignClientAccessLicense(desiredLicenseId, user);
-				} else {
-					// user is already assigned the license, don't remove it
-					licensesToRemoveForUser.remove(desiredLicenseId);
+			if (desiredLicenses.get(user) != null) {
+				Iterator<String> desiredLicensesForUser = desiredLicenses.get(user).iterator();
+				while (desiredLicensesForUser.hasNext()) {
+					String desiredLicense = desiredLicensesForUser.next();
+					String desiredLicenseId = rtc.getLicenseId(desiredLicense);
+					if (!actualLicenses.get(user).contains(desiredLicenseId)) {
+						// User doesn't play the desired role, add it
+						log.info("Adding client access license "+desiredLicense+" to user "+user+" in server "+getServerURI());
+						rtc.assignClientAccessLicense(desiredLicenseId, user);
+					} else {
+						// user is already assigned the license, don't remove it
+						licensesToRemoveForUser.remove(desiredLicenseId);
+					}
 				}
 			}
 			// unassign the licenses the user should no longer have
@@ -183,6 +192,7 @@ public class RTCServer {
 	public Collection<ProjectArea> getProjectAreas() {
 		if (serverObject == null) return null;
 		List<ProjectArea> projectAreas = new ArrayList<ProjectArea>();
+		if (serverObject.get("Project Areas") == null) return projectAreas; // none specified
 		Iterator<JSONObject> pas = ((JSONArray)serverObject.get("Project Areas")).iterator();
 		while (pas.hasNext()) {
 			projectAreas.add(new ProjectArea(pas.next(), ldapConnection, rtc, log));

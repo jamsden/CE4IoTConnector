@@ -1,0 +1,63 @@
+{
+    "LDAPConnection": {
+        "URI": "ldap://mvs255.rtp.raleigh.ibm.com",
+        "userId": "racfid=BGREEN,profiletype=USER,CN=RACF255,O=IBM,C=RTC",
+        "password": "rtc2fun"
+    },
+    "RTCServers": [
+        {"serverURI": "https://rtceerb.rtp.raleigh.ibm.com:9443/ccm",
+         "admin": "JAZZ",
+         "password": "rtc9fun",
+         "Licenses": [
+            {"Rational Team Concert - Developer": "racfid=RTCDL,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+            {"Rational Team Concert - Contributor": "racfid=RTCCL,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
+         ],
+         "Project Areas": [
+            {"name": "Pet Store",
+             "Administrators": "racfid=APETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+             "Members": "racfid=APETB,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+             "Process Roles": [
+                {"Developer": "racfid=OPETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                {"Tester": "racfid=TPETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}],
+             "Team Areas": [
+                {"name": "Pet Management",
+                "Administrators": "racfid=APETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                "Members": "racfid=APETB,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                "Process Roles": [
+                    {"Developer": "racfid=OPETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                    {"Tester": "racfid=TPETK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}]
+                }]
+            },
+            {"name": "JKE Banking",
+             "Administrators": "racfid=AJKEK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+             "Members": "racfid=AJKEB,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+             "Process Roles": [
+                    {"Developer": "racfid=OJKEK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                    {"Tester": "racfid=TJKEK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
+             ],
+             "Team Areas": [
+                {"name": "Business Recovery Matters",
+                 "Administrators": "racfid=AJKEK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                 "Members": "racfid=AJKEB,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                 "Process Roles": [
+                    {"Developer": "racfid=OJKEK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                    {"Tester": "racfid=TJKEK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
+                 ]},                 
+                {"name": "Energy Efficiency Matters",
+                 "Administrators": "racfid=AJKEK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                 "Members": "racfid=AJKEB,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                 "Process Roles": [
+                    {"Developer": "racfid=OJKEK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                    {"Tester": "racfid=TJKEK,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
+                 ]},
+                 {"name": "Non-existent Team Area"}
+            ]},
+            {"name": "Non-existent Project Area"}            
+           ]
+        },
+        {"serverURI": "https://ce4iot.rtp.raleigh.ibm.com:9443/ccm",
+            "admin": "jamsden",
+            "password": "Matjas3cha"},
+        {"serverURI": "https://no-server.rtp.raleigh.ibm.com:9443/ccm"}
+    ]
+}

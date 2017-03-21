@@ -81,7 +81,6 @@ public class RTCUserOperations {
 			
 		} catch (Exception e) {
 			log.error("Unable to login to: " + server.getServerURI());			
-			e.printStackTrace();
 		}
 		
 	}
@@ -370,6 +369,8 @@ public class RTCUserOperations {
 			IContributor user = teamRepository.contributorManager().fetchContributorByUserId(userId, progressMonitor);
 			assignedLicenses.addAll(Arrays.asList(licenseAdminService.getAssignedLicenses(user)));
 		} catch (TeamRepositoryException e) {
+			log.error("Cannot get process roles for user: "+userId);
+		} catch (Exception e) {
 			log.error("Cannot get process roles for user: "+userId);
 		}
 		return assignedLicenses;

@@ -1,0 +1,57 @@
+{
+    "LDAPConnection": {
+        "URI": "ldap://mvs255.rtp.raleigh.ibm.com",
+        "userId": "racfid=BGREEN,profiletype=USER,CN=RACF255,O=IBM,C=RTC",
+        "password": "rtc2fun"
+    },
+    "RTCServers": [
+        {"serverURI": "https://rtceerb.rtp.raleigh.ibm.com:9443/ccm",
+         "admin": "JAZZ",
+         "password": "rtc9fun",
+         "Licenses": [
+            {"Rational Team Concert - Developer": "racfid=RTCDLI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+            {"Rational Team Concert - Contributor": "racfid=RTCCLI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
+         ],
+         "Project Areas": [
+            {"name": "Pet Store",
+             "Administrators": "racfid=APETKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+             "Members": "racfid=APETBI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+             "Process Roles": [
+                {"Developer": "racfid=OPETKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                {"Tester": "racfid=TPETKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}],
+             "Team Areas": [
+                {"name": "Pet Management",
+                "Administrators": "racfid=APETKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                "Members": "racfid=APETBI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                "Process Roles": [
+                    {"Developer": "racfid=OPETKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                    {"Tester": "racfid=TPETKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}]
+                }]
+            },
+            {"name": "JKE Banking",
+             "Administrators": "racfid=AJKEKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+             "Members": "racfid=AJKEBI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+             "Process Roles": [
+                    {"Developer": "racfid=OJKEKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                    {"Tester": "racfid=TJKEKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
+             ],
+             "Team Areas": [
+                {"name": "Business Recovery Matters",
+                 "Administrators": "racfid=AJKEKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                 "Members": "racfid=AJKEBI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                 "Process Roles": [
+                    {"Developer": "racfid=OJKEKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                    {"Tester": "racfid=TJKEKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
+                 ]},                 
+                {"name": "Energy Efficiency Matters",
+                 "Administrators": "racfid=AJKEKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                 "Members": "racfid=AJKEBI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                 "Process Roles": [
+                    {"Developer": "racfid=OJKEKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                    {"Tester": "racfid=TJKEKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
+                 ]}
+            ]}            
+           ]
+        }
+    ]
+}

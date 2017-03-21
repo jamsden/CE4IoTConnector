@@ -1,5 +1,6 @@
 package com.ibm.repotools.utilities;
 
+import java.util.Collection;
 import java.util.Iterator;
 
 import javax.naming.NamingException;
@@ -13,7 +14,6 @@ import org.apache.commons.cli.PosixParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ibm.team.process.common.IProcessArea;
 import com.ibm.team.repository.client.TeamPlatform;
 import com.ibm.team.repository.common.TeamRepositoryException;
 
@@ -59,7 +59,7 @@ public class LDAP2RTCSync {
 	 * @return
 	 * @throws ParseException
 	 */
-	private boolean initialize(String[] args) throws ParseException {
+	public boolean initialize(String[] args) throws ParseException {
 
 		try {
 			Options options = new Options();
@@ -93,12 +93,17 @@ public class LDAP2RTCSync {
 		return true;
 
 	}
+	
+	public Collection<RTCServer> getServers() {
+		return config.getServers();
+	}
+	
 		
 	/** Does the LDAP - RTC user synchronization
 	 * 
 	 * @throws TeamRepositoryException
 	 */
-	private void sync() throws TeamRepositoryException {
+	public void sync() throws TeamRepositoryException {
 		try {
 			// Synchronize each RTC server specified in the configuration file.
 			Iterator<RTCServer> servers = config.getServers().iterator();

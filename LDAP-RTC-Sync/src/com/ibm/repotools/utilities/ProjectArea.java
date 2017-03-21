@@ -3,11 +3,13 @@ package com.ibm.repotools.utilities;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -85,6 +87,7 @@ public class ProjectArea {
 	 */
 	public void syncUsers() throws NamingException {
 		try {
+			log.info("Syncing project or team area: "+getName());
 			IProcessArea pa = rtc.getProjectArea(getName());
 			if (pa == null) {
 				log.error("Project or Team Area: "+getName()+" does not exist");
@@ -116,6 +119,7 @@ public class ProjectArea {
 			e.printStackTrace();
 		} catch (TeamRepositoryException e) {
 			log.error("Project or Team Area: "+getName()+" does not exist");
+			e.printStackTrace();
 		} catch (URISyntaxException e) {
 			log.error(e.getMessage());
 		}
@@ -141,13 +145,15 @@ public class ProjectArea {
 		}
 		try {
 			// Get the LDAP Users for this project or team area
-			NamingEnumeration ldapUsers = ldapConnection.getContext().getAttributes(racfGroupDN).get("racfgroupuserids").getAll();
+			NamingEnumeration ldapUsers = null;
+			Attribute members = ldapConnection.getContext().getAttributes(racfGroupDN).get("racfgroupuserids");
+			if (members != null) ldapUsers = members.getAll();
 
 			// Get the current RTC users based on membership in the project or team area
 			Map<String, IContributor> rtcMembers = rtc.getMembers(pa, memberRole);
 			Map<String, IContributor> membersToRemove = new HashMap<String, IContributor>(rtcMembers);
 			
-			while (ldapUsers.hasMoreElements()) {
+			while (ldapUsers != null && ldapUsers.hasMoreElements()) {
 				String userDN = (String)ldapUsers.next();
 				Attributes ldapUser = ldapConnection.getContext().getAttributes(userDN);
 				if (ldapUser == null) {
@@ -162,7 +168,7 @@ public class ProjectArea {
 				// Examine the RTC users, adding, updating or marking for removal is needed
 				if (!rtcMembers.containsKey(userId)) {
 					// Add a new user
-					log.info("Adding new user: "+userId+" ("+name+") to: "+pa.getName());
+					log.info("Adding new user: "+userId+" ("+name+") to: "+getName());
 					rtc.addMember(pa, memberRole, userId);
 				} else {
 					membersToRemove.remove(userId); // don't remove this member
@@ -173,7 +179,7 @@ public class ProjectArea {
 			Iterator<IContributor> removals = membersToRemove.values().iterator();
 			while (removals.hasNext()) {
 				IContributor member = removals.next();
-				log.info("Removing user: "+member.getUserId()+" ("+member.getName()+"), email: "+member.getEmailAddress()+" to: "+pa.getName());
+				log.info("Removing user: "+member.getUserId()+" ("+member.getName()+"), email: "+member.getEmailAddress()+" to: "+getName());
 				rtc.removeMember(pa, memberRole, member);
 			}
 		} catch (NamingException e) {
@@ -189,13 +195,13 @@ public class ProjectArea {
 	 * @param p the project or team area to synchronize
 	 */
 	public void syncProcessRoles(IProcessArea p) {
-		log.info("Syncing process roles for "+p.getName());
+		log.info("Syncing process roles for "+getName());
 		
 		// Collect the desired roles for each userId as specified in the LDAP groups in the config file
 		Map<String, List<String>> desiredRoles = new HashMap<String, List<String>>();
 		JSONArray processRoleObjects =  (JSONArray)rawPA.get("Process Roles");
 		if (processRoleObjects == null || processRoleObjects.size() == 0) {
-			log.warn("No process roles were specified for "+p.getName());
+			log.warn("No process roles were specified for "+getName());
 			return;
 		}
 		Iterator<JSONObject> processRoles = processRoleObjects.iterator();
@@ -206,8 +212,10 @@ public class ProjectArea {
 			String racfGroupDN = (String)processRole.get(roleName);
 			// the members of this group should be assigned role roleName
 			try {
-				NamingEnumeration ldapUsers = ldapConnection.getContext().getAttributes(racfGroupDN).get("racfgroupuserids").getAll();
-				while (ldapUsers.hasMoreElements()) {
+				NamingEnumeration ldapUsers = null;
+				Attribute members = ldapConnection.getContext().getAttributes(racfGroupDN).get("racfgroupuserids");
+				if (members != null) ldapUsers = members.getAll();
+				while (ldapUsers != null && ldapUsers.hasMoreElements()) {
 					String userDN = (String)ldapUsers.next();
 					Attributes ldapUser = ldapConnection.getContext().getAttributes(userDN);
 					if (ldapUser == null) {
