@@ -9,10 +9,14 @@
  */
 package com.ibm.repotools.utilities;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 import javax.naming.Context;
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
 import javax.naming.directory.DirContext;
 import javax.naming.ldap.InitialLdapContext;
 
@@ -69,4 +73,29 @@ public class LdapConnection {
 		return ctx;
 	}
 	
+	/** Get all the members of an LDAP group, including members of its subgroups.
+	 * 
+	 * @param groupDN the group Distinguished Name
+	 * @return a List<String> of all the members  (empty if the group does not have any members)
+	 * 
+	 * @throws NamingException
+	 */
+	public List<String> getMembers(String groupDN) throws NamingException {
+		List<String> result = new ArrayList<String>();
+		// Add all the members of this group
+		Attribute members = ctx.getAttributes(groupDN).get("racfgroupuserids");
+		NamingEnumeration ldapUsers = (members != null)? members.getAll(): null;
+		while (ldapUsers != null && ldapUsers.hasMoreElements()) {
+			result.add((String)ldapUsers.next());
+		}
+
+		// now recursively do all the subgroups
+		NamingEnumeration subgroups = null;
+		Attribute groups = ctx.getAttributes(groupDN).get("racfsubgroupname");
+		if (groups != null) subgroups = groups.getAll(); 
+		while (subgroups != null && subgroups.hasMoreElements()) {
+			result.addAll(getMembers((String)subgroups.next()));
+		}
+		return result;
+	}
 }

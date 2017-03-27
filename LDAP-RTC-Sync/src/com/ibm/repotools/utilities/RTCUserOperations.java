@@ -215,6 +215,17 @@ public class RTCUserOperations {
 		return members;
 	}
 	
+	public IContributor getContributor(IContributorHandle contributorHandle) {
+		IContributor contributor = null;
+		try {
+			contributor = (IContributor)teamRepository.itemManager().fetchCompleteItem(contributorHandle, IItemManager.DEFAULT, progressMonitor);
+		} catch (TeamRepositoryException e) {
+			e.printStackTrace();
+		}
+		return contributor;
+		
+	}
+	
 	/** Add a new Administrators or Members member to the project area, The new member
 	 * may also have their name and email address updated.
 	 * 
@@ -362,6 +373,22 @@ public class RTCUserOperations {
 		return result;
 	}
 	
+	/** Get a list of contributors assigned a given Client Access License
+	 * @param cla
+	 * @return
+	 */
+	public IContributorHandle[] getContributorsAssignedLicense(String cla) {
+		IContributorHandle[] licensedContributors = null;
+		try {
+			return licensedContributors = licenseAdminService.getLicensedContributors(getLicenseId(cla));
+		} catch (TeamRepositoryException e) {
+			log.error("Cannot get users assigned to CLA: "+cla);
+		} catch (Exception e) {
+			log.error("Cannot get users assigned to CLA: "+cla);			
+		}
+		return licensedContributors;
+	}
+	
 	
 	/** Get the client access licenses assigned to to a user.
 	 * 
@@ -378,9 +405,9 @@ public class RTCUserOperations {
 			IContributor user = teamRepository.contributorManager().fetchContributorByUserId(userId, progressMonitor);
 			assignedLicenses.addAll(Arrays.asList(licenseAdminService.getAssignedLicenses(user)));
 		} catch (TeamRepositoryException e) {
-			log.error("Cannot get process roles for user: "+userId);
+			log.error("Cannot get licenses for user: "+userId);
 		} catch (Exception e) {
-			log.error("Cannot get process roles for user: "+userId);
+			log.error("Cannot get licenses for for user: "+userId);
 		}
 		return assignedLicenses;
 		
@@ -407,12 +434,13 @@ public class RTCUserOperations {
 	 * @param licenseId the license ID to assign (e.g., com.ibm.team.rtc.developer)
 	 * @param userId the user who will be assigned the license
 	 */
-	public void assignClientAccessLicense(String licenseId, String userId) {
+	public void assignClientAccessLicense(String licenseKey, String userId) {
 		try {
+			String licenseId = getLicenseId(licenseKey);
 			IContributor user = teamRepository.contributorManager().fetchContributorByUserId(userId, progressMonitor);
 			licenseAdminService.assignLicense(user, licenseId);
 		} catch (TeamRepositoryException e) {
-			log.error("Unable to assign client access license: "+licenseId+" to user: "+userId);
+			log.error("Unable to assign client access license: "+licenseKey+" to user: "+userId);
 		}
 	}
 
@@ -421,12 +449,13 @@ public class RTCUserOperations {
 	 * @param licenseId the license ID to unassign (e.g., com.ibm.team.rtc.developer)
 	 * @param userId the user who will loose the license
 	 */
-	public void unassignClientAccessLicense(String licenseId, String userId) {
+	public void unassignClientAccessLicense(String licenseKey, String userId) {
 		try {
+			String licenseId = getLicenseId(licenseKey);
 			IContributor user = teamRepository.contributorManager().fetchContributorByUserId(userId, progressMonitor);				licenseAdminService.unassignLicense(user, licenseId);
 			licenseAdminService.unassignLicense(user, licenseId);
 		} catch (TeamRepositoryException e) {
-			log.error("Unable to unassign client access license: "+licenseId+" from user: "+userId);
+			log.error("Unable to unassign client access license: "+licenseKey+" from user: "+userId);
 		}
 	}
 

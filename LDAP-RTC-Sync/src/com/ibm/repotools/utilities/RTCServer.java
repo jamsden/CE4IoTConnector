@@ -16,9 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 
 import org.json.simple.JSONArray;
@@ -26,6 +24,7 @@ import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 
 import com.ibm.team.repository.common.IContributor;
+import com.ibm.team.repository.common.IContributorHandle;
 import com.ibm.team.repository.common.TeamRepositoryException;
 
 /** A representation of an RTC server from the LDAP-RTC user sync configuration file
@@ -99,28 +98,37 @@ public class RTCServer {
 	 * 
 	 */
 	public void syncLicenses() throws TeamRepositoryException {
-		if (serverObject == null) return;
+		if (serverObject == null) return;  // no server found in the config file
 		log.info("Assigning client access licenses for: "+getServerURI());
 		
-		// Collect the desired licenses for each userId as specified in the LDAP groups in the config file
-		Map<String, List<String>> desiredLicenses = new HashMap<String, List<String>>();
-		JSONArray licenseObjects =  (JSONArray)serverObject.get("Licenses");
+		// Collect the desired licenses for each user as specified in the LDAP groups in the config file
+		Map<String, List<String>> desiredLicenses = new HashMap<String, List<String>>();  // <CLA, list of users> that should have the license
+		
+		JSONArray licenseObjects =  (JSONArray)serverObject.get("Licenses");  // contains {CLA, LDAPGroup} mappings from the config file
 		if (licenseObjects == null || licenseObjects.size() == 0) {
 			log.warn("No Licenses were specified for "+getServerURI());
 			return;
 		}
+		
+		// For each License object in the the JSON config file:
 		Iterator<JSONObject> licenses = licenseObjects.iterator();
 		while (licenses.hasNext()) {
 			JSONObject license = licenses.next();
-			if (license.keySet().size() != 1) continue; // possibly improperly defined license mapping
-			String licenseId = (String)license.keySet().toArray()[0];
-			String racfGroupDN = (String)license.get(licenseId);
+			if (license.keySet().size() != 1) continue; // possibly improperly defined license mapping, should be only one CLA per mapping
+			
+			// Note: claName is the Client Access License name (as shown in the JTS License Administration page).
+			// In the JTS, licenses are identified by licenseId which is of the form com.ibm.team.rtc.developer
+			// We need to carefully distinguish these two identifiers and translate between them as needed.
+			// claName will be used as the client-facing name of the license.
+			
+			String claName = (String)license.keySet().toArray()[0];
+			String racfGroupDN = (String)license.get(claName);
 			// the members of this group should be assigned client access license key licenseId
+			
 			try {
-				Attribute groupIds = ldapConnection.getContext().getAttributes(racfGroupDN).get("racfgroupuserids");
-				if (groupIds==null) continue; // no members in the group, nothing to do
-				NamingEnumeration ldapUsers = groupIds.getAll();
-				while (ldapUsers.hasMoreElements()) {
+				// For each userDN in the LDAP group and any subgroups:
+				Iterator<String> ldapUsers = ldapConnection.getMembers(racfGroupDN).iterator();
+				while (ldapUsers != null && ldapUsers.hasNext()) {
 					String userDN = (String)ldapUsers.next();
 					Attributes ldapUser = ldapConnection.getContext().getAttributes(userDN);
 					if (ldapUser == null) {
@@ -128,12 +136,13 @@ public class RTCServer {
 						continue;
 					}
 					String userId = ldapUser.get("racfid").get().toString();
-					if (desiredLicenses.containsKey(userId)) {
-						desiredLicenses.get(userId).add(licenseId);
+					// Add this userId to the list of users that should be assigned the license identified by claName
+					if (desiredLicenses.containsKey(claName)) {
+						desiredLicenses.get(claName).add(userId);
 					} else {
-						List<String> roles = new ArrayList<String>();
-						roles.add(licenseId);
-						desiredLicenses.put(userId, roles);
+						List<String> allocatedUsers = new ArrayList<String>();
+						allocatedUsers.add(userId);
+						desiredLicenses.put(claName, allocatedUsers);
 					}
 
 				}
@@ -141,44 +150,59 @@ public class RTCServer {
 				log.error("LDAP group: "+racfGroupDN+" does not exist");;
 			}
 		}
-		// Next get the client access license keys the users currently have allocated
-		// Only process licenses for the users that are defined in the LDAP group
-		// Leave the existing licenses that are not managed by any LDAP group alone
-		Map<String, List<String>> actualLicenses = new HashMap<String, List<String>>();
-		Iterator<String> contributors = desiredLicenses.keySet().iterator();
-		while (contributors.hasNext()) {
-			String user = contributors.next();
-			actualLicenses.put(user, rtc.getAssignedClientAccessLicenses(user));
+		
+		// Next get the users assigned to each client access license
+		
+		// Note: any CLA that should be allocated, e.g., Jazz Administrator needs RTC-Developer, should
+		// Be defined in the groups. There's no attempt here to preserve CLAs we think 
+		// should be retained, or delete users from CLAs that are not configured. This preserves
+		// CLM licenses that generally should not be removed.
+		
+		// Note: The Jazz ADMIN will need an RTC - Developer license for this utility to run
+		// The config file and LDAP groups need to be configured to ensure this license is not removed.
+		
+		Map<String, List<String>> actualLicenses = new HashMap<String, List<String>>();  // <CLA, list of userId>
+		Iterator<String> clas = desiredLicenses.keySet().iterator();
+		while (clas.hasNext()) {
+			String cla = clas.next();
+			IContributorHandle[] contributors = rtc.getContributorsAssignedLicense(cla);
+			List<String> users = new ArrayList<String>();
+			for (int l=0; l<contributors.length; l++) {
+				IContributor contributor = rtc.getContributor(contributors[l]);
+				String userId = contributor.getUserId();
+				users.add(userId);
+			}
+			actualLicenses.put(cla, users);				
 		}
 		
 		// Now sync the desired and actual licenses
-		Iterator<String> users = desiredLicenses.keySet().iterator();
-		while (users.hasNext()) {
-			String user = users.next();
-			List<String> licensesToRemoveForUser = actualLicenses.get(user);
-			if (desiredLicenses.get(user) != null) {
-				Iterator<String> desiredLicensesForUser = desiredLicenses.get(user).iterator();
-				while (desiredLicensesForUser.hasNext()) {
-					String desiredLicense = desiredLicensesForUser.next();
-					String desiredLicenseId = rtc.getLicenseId(desiredLicense);
-					if (!actualLicenses.get(user).contains(desiredLicenseId)) {
-						// User doesn't play the desired role, add it
-						log.info("Adding client access license "+desiredLicense+" to user "+user+" in server "+getServerURI());
-						rtc.assignClientAccessLicense(desiredLicenseId, user);
+		clas = desiredLicenses.keySet().iterator();
+		while (clas.hasNext()) {
+			String cla = clas.next();
+			// Assume we remove them all, and take the ones we want to keep out of this list
+			List<String> usersToUnassignFromlicense = actualLicenses.get(cla);
+			if (desiredLicenses.get(cla) != null) {  // there are users assigned this license
+				Iterator<String> desiredUsersForLicense = desiredLicenses.get(cla).iterator();
+				while (desiredUsersForLicense.hasNext()) {
+					String desiredUserId = desiredUsersForLicense.next();
+					if (!actualLicenses.get(cla).contains(desiredUserId)) {
+						// User isn't allocated the license, allocate it
+						log.info("Adding client access license "+cla+" to user "+desiredUserId+" in server "+getServerURI());
+						rtc.assignClientAccessLicense(cla, desiredUserId);
 					} else {
 						// user is already assigned the license, don't remove it
-						licensesToRemoveForUser.remove(desiredLicenseId);
+						usersToUnassignFromlicense.remove(desiredUserId);
 					}
 				}
 			}
 			// unassign the licenses the user should no longer have
-			Iterator<String> licensesToRemove = licensesToRemoveForUser.iterator();
-			while (licensesToRemove.hasNext()) {
-				String licenseId = licensesToRemove.next();
-				log.info("Unassigning client acccess license "+licenseId+" from user "+user+" in server "+getServerURI());
-				rtc.unassignClientAccessLicense(licenseId, user);
+			Iterator<String> usersToRemove = usersToUnassignFromlicense.iterator();
+			while (usersToRemove.hasNext()) {
+				String userId = usersToRemove.next();
+				log.info("Unassigning client acccess license "+cla+" from user "+userId+" in server "+getServerURI());
+				rtc.unassignClientAccessLicense(cla, userId);
 			}
-		}
+		} // End for each CLA
 	}
 	
 	/** Synchronize the project area Administrators, Members and Process Roles for this server

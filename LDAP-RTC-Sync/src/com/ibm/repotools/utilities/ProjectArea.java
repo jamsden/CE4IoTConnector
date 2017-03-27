@@ -154,15 +154,13 @@ public class ProjectArea {
 		}
 		try {
 			// Get the LDAP Users for this project or team area
-			NamingEnumeration ldapUsers = null;
-			Attribute members = ldapConnection.getContext().getAttributes(racfGroupDN).get("racfgroupuserids");
-			if (members != null) ldapUsers = members.getAll();
+			Iterator<String> ldapUsers = ldapConnection.getMembers(racfGroupDN).iterator();
 
 			// Get the current RTC users based on membership in the project or team area
 			Map<String, IContributor> rtcMembers = rtc.getMembers(pa, memberRole);
 			Map<String, IContributor> membersToRemove = new HashMap<String, IContributor>(rtcMembers);
 			
-			while (ldapUsers != null && ldapUsers.hasMoreElements()) {
+			while (ldapUsers != null && ldapUsers.hasNext()) {
 				String userDN = (String)ldapUsers.next();
 				Attributes ldapUser = ldapConnection.getContext().getAttributes(userDN);
 				if (ldapUser == null) {
@@ -221,10 +219,8 @@ public class ProjectArea {
 			String racfGroupDN = (String)processRole.get(roleName);
 			// the members of this group should be assigned role roleName
 			try {
-				NamingEnumeration ldapUsers = null;
-				Attribute members = ldapConnection.getContext().getAttributes(racfGroupDN).get("racfgroupuserids");
-				if (members != null) ldapUsers = members.getAll();
-				while (ldapUsers != null && ldapUsers.hasMoreElements()) {
+				Iterator<String> ldapUsers = ldapConnection.getMembers(racfGroupDN).iterator();
+				while (ldapUsers != null && ldapUsers.hasNext()) {
 					String userDN = (String)ldapUsers.next();
 					Attributes ldapUser = ldapConnection.getContext().getAttributes(userDN);
 					if (ldapUser == null) {

@@ -54,7 +54,7 @@ public class LDAP2RTCSync {
 			if (synchronizer.initialize(args)) {
 				synchronizer.sync();
 			}
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			TeamPlatform.shutdown();
