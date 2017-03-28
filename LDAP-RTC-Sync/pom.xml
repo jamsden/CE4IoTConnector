@@ -33,7 +33,7 @@
 					</descriptorRefs>
 					<archive>
 						<manifest>
-							<mainClass>com.ibm.repotools.utilities.LDP2RTCSync</mainClass>
+							<mainClass>com.ibm.repotools.utilities.LDAP2RTCSync</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
