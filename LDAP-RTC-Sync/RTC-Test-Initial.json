@@ -2,12 +2,12 @@
     "LDAPConnection": {
         "URI": "ldap://mvs255.rtp.raleigh.ibm.com",
         "userId": "racfid=BGREEN,profiletype=USER,CN=RACF255,O=IBM,C=RTC",
-        "password": "rtc2fun"
+        "password": "ARfvvd0+8A4="
     },
     "RTCServers": [
         {"serverURI": "https://rtceerb.rtp.raleigh.ibm.com:9443/ccm",
          "admin": "JAZZ",
-         "password": "rtc9fun",
+         "password": "FdjJiGnSwpU=",
          "Licenses": [
             {"Rational Team Concert - Developer": "racfid=RTCDLI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
             {"Rational Team Concert - Contributor": "racfid=RTCCLI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}

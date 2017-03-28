@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.security.auth.login.LoginException;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.slf4j.Logger;
@@ -66,8 +68,9 @@ public class RTCUserOperations {
 	 * team server, and establishes the required client APIs
 	 * @param server
 	 * @param log
+	 * @throws LoginException 
 	 */
-	public RTCUserOperations(RTCServer server, Logger log) {
+	public RTCUserOperations(RTCServer server, Logger log) throws LoginException {
 		this.server = server;
 		this.log = log;
 		
@@ -89,7 +92,8 @@ public class RTCUserOperations {
 			itemService = (IProcessItemService) teamRepository.getClientLibrary(IProcessItemService.class);
 			
 		} catch (Exception e) {
-			log.error("Unable to login to: " + server.getServerURI());			
+			log.error("Unable to login to: " + server.getServerURI());
+			throw new LoginException("Unable to login to: " + server.getServerURI());
 		}
 		
 	}

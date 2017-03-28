@@ -9,8 +9,10 @@
  */
 package com.ibm.repotools.utilities;
 
+import java.io.Console;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Scanner;
 
 import javax.naming.NamingException;
 
@@ -25,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.ibm.team.repository.client.TeamPlatform;
 import com.ibm.team.repository.common.TeamRepositoryException;
+import com.ibm.team.repository.common.util.ObfuscationHelper;
 
 /** A program to synchronize LDAP (RACF) and RTC users.
  *   * Server users based on repository permissions (JazzAdmins, JazzUsers, etc.)
@@ -73,9 +76,25 @@ public class LDAP2RTCSync {
 		try {
 			Options options = new Options();
 			options.addOption("c", "config", true, "LDAP - RTC users configuration file");
+			options.addOption("e", "encrypt", false, "Encrypt passwords to be used in the configuration file");
 
 			CommandLineParser parser = new PosixParser();
 			CommandLine cmd = parser.parse(options, args);
+			
+			if (cmd.hasOption("e")) {
+				Console console = System.console();
+				String passwd = null;
+				if (console == null) {
+					Scanner scanner = new Scanner(System.in);
+					System.out.println("Enter password to encrypt:");
+					passwd = scanner.nextLine();
+					scanner.close();
+				} else {
+					passwd = new String(console.readPassword("Enter password to encrypt:"));
+				}
+				System.out.println(ObfuscationHelper.encryptString(passwd));
+				System.exit(0);
+			}
 
 			String configFile = cmd.getOptionValue("c");
 

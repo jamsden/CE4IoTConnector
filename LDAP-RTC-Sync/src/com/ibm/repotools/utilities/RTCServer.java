@@ -9,6 +9,8 @@
  */
 package com.ibm.repotools.utilities;
 
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -18,6 +20,7 @@ import java.util.Map;
 
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
+import javax.security.auth.login.LoginException;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -26,6 +29,7 @@ import org.slf4j.Logger;
 import com.ibm.team.repository.common.IContributor;
 import com.ibm.team.repository.common.IContributorHandle;
 import com.ibm.team.repository.common.TeamRepositoryException;
+import com.ibm.team.repository.common.util.ObfuscationHelper;
 
 /** A representation of an RTC server from the LDAP-RTC user sync configuration file
  * 
@@ -48,7 +52,11 @@ public class RTCServer {
 		serverObject = obj;
 		ldapConnection = connection;
 		this.log = log;
-		rtc = new RTCUserOperations(this, log);
+		try {
+			rtc = new RTCUserOperations(this, log);
+		} catch (LoginException e) {
+			rtc = null;
+		}
 	}
 	
 	/**
@@ -72,7 +80,13 @@ public class RTCServer {
 	 */
 	public String getPassword() {
 		if (serverObject == null) return null;
-		return (String)serverObject.get("password");
+		String password = "********"; // don't return a null password
+		try {
+			password = ObfuscationHelper.decryptString((String)serverObject.get("password"));
+		} catch (UnsupportedEncodingException | GeneralSecurityException e) {
+			// ignore decoding errors
+		}
+		return password;
 	}
 
 		
@@ -87,7 +101,7 @@ public class RTCServer {
 	 * @throws NamingException
 	 */
 	public void syncServerUsers() throws TeamRepositoryException, NamingException {
-		if (serverObject == null) return;
+		if (serverObject == null || rtc == null) return;
 		syncLicenses();
 		syncProjectAreas();
 	}
@@ -98,7 +112,7 @@ public class RTCServer {
 	 * 
 	 */
 	public void syncLicenses() throws TeamRepositoryException {
-		if (serverObject == null) return;  // no server found in the config file
+		if (serverObject == null || rtc == null) return;  // no server found in the config file or couldn't login
 		log.info("Assigning client access licenses for: "+getServerURI());
 		
 		// Collect the desired licenses for each user as specified in the LDAP groups in the config file
@@ -167,10 +181,12 @@ public class RTCServer {
 			String cla = clas.next();
 			IContributorHandle[] contributors = rtc.getContributorsAssignedLicense(cla);
 			List<String> users = new ArrayList<String>();
-			for (int l=0; l<contributors.length; l++) {
-				IContributor contributor = rtc.getContributor(contributors[l]);
-				String userId = contributor.getUserId();
-				users.add(userId);
+				if (contributors != null) {
+				for (int l=0; l<contributors.length; l++) {
+					IContributor contributor = rtc.getContributor(contributors[l]);
+					String userId = contributor.getUserId();
+					users.add(userId);
+				}
 			}
 			actualLicenses.put(cla, users);				
 		}
@@ -210,7 +226,7 @@ public class RTCServer {
 	 * @throws NamingException
 	 */
 	public void syncProjectAreas() throws NamingException {
-		if (serverObject == null) return;
+		if (serverObject == null || rtc == null) return;
 		Collection<ProjectArea> projectAreas = getProjectAreas();
 		Iterator<ProjectArea> pas = projectAreas.iterator();
 		while (pas.hasNext()) {
@@ -223,7 +239,7 @@ public class RTCServer {
 	 * @return the RTC Project Areas configurated for this server from the configuration file.
 	 */
 	public Collection<ProjectArea> getProjectAreas() {
-		if (serverObject == null) return null;
+		if (serverObject == null || rtc == null) return null;
 		List<ProjectArea> projectAreas = new ArrayList<ProjectArea>();
 		if (serverObject.get("Project Areas") == null) return projectAreas; // none specified
 		Iterator<JSONObject> pas = ((JSONArray)serverObject.get("Project Areas")).iterator();
@@ -237,6 +253,6 @@ public class RTCServer {
 	 * Disconnect from this RTC server
 	 */
 	public void disconnect() {
-		rtc.disconnect();
+		if (rtc != null) rtc.disconnect();
 	}
 }

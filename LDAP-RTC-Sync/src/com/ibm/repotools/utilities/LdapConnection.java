@@ -9,6 +9,8 @@
  */
 package com.ibm.repotools.utilities;
 
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -21,6 +23,8 @@ import javax.naming.directory.DirContext;
 import javax.naming.ldap.InitialLdapContext;
 
 import org.json.simple.JSONObject;
+
+import com.ibm.team.repository.common.util.ObfuscationHelper;
 
 /** Supports the connection to an LDAP server as specified in the configuration file.
  * 
@@ -62,7 +66,13 @@ public class LdapConnection {
 	
 	public String getAdminPassword() {
 		if (obj == null) return null;
-		return (String)ldapConnection.get("password");
+		String password = "********"; // don't return a null password
+		try {
+			password = ObfuscationHelper.decryptString((String)ldapConnection.get("password"));
+		} catch (UnsupportedEncodingException | GeneralSecurityException e) {
+			// ignore decoding errors
+		}
+		return password;
 	}
 	
 	/** The DirContext can be used to access this LDAP connection.
