@@ -15,6 +15,10 @@ LDAP2RTCSync complements capabilities already provided by `repotools -userSync` 
  
 ## Example
 
+./syncUsers.sh --config Sample-config.json
+
+Sample-config.json:
+
 ```
 {
     "LDAPConnection": {
@@ -54,24 +58,60 @@ LDAP2RTCSync complements capabilities already provided by `repotools -userSync` 
 
 ## Motivation
 
-A short description of the motivation behind the creation and maintenance of the project. This should explain **why** the project exists.
+RTC currently provides a utility, `repotools -syncusers`, to allow customers configure RTC with users pulled from LDAP for authentication as well as define which users are Jazz Admin or Jazz User (repository permissions).  However, it does not support any external group definitions or the ability for LDAP to determine the team membership, roles for individuals and allocated licenses.  
+
+The purpose of LDAP-RTC-Sync is to provide a solution to allow group membership to be defined in LDAP along with the appropriate roles.  This utility was created to initiate the process of taking the information out of the LDAP groups and configuring the RTC Team Area’s automatically.
 
 ## Installation
 
-Provide code examples and explanations of how to get the project.
+Unzip syncUsers.zip to a convenient folder. The contents contain:
 
-## API Reference
+* **license** - a folder containing the International License Agreement for Non-Warranted Programs
+* **log4j.properties** - so that clients can change the logging preferences
+* **Sample-config.json** - just to provide a sample for documentation
+* **syncUsers.bat** - Windows command for invoking syncUsers
+* **syncUsers.sh** - UNIX shell command for invoking syncUsers
+* **syncUsers.jar** - the JAR file containing LDAP2LDPSync and all its dependencies
+* **syncUsers.pdf** - the README.md file documentation of the program exported as a PDF
 
-Depending on the size of the project, if it is small and simple enough the reference docs can be added to the README. For medium size to larger projects it is important to at least provide a link to where the API reference docs live.
+## Password Obfuscation
+
+Passwords must be supplied for a user with read permissions on the LDAP repository, and an administrator for the RTC servers to configure. These passwords are stored in the JSON config file as encrypted strings. To encrypt a password, use the --encrypt command line argument:
+
+`./syncUsers --encrypt`
+
+The program will prompt for a password and then print the encrypted string to standard output. Copy this string into the proper password value in the JSON config file.
+
+
+## JSON Configuration File format
+
+The JSON configuration file defines the LDAP server that provides the groups and group members, and a number of RTC Server objects that specify the project and team area administrators and members, the members' process roles, and the client access licenses that should be allocated for the users. Each entry maps an object in RTC to an LDAP group. The members of that group specify the users that are used by that entry. The LDAP groups can also contain subgroups, and the members of the subgroups are recursively applied to the entry.
+
+For example, in the Sample-config.json file above, the Administrators for the *Pet Store* project area are defined by the RACF group with DN racfid=APETKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC.
 
 ## Tests
 
-Describe and show how to run the tests with code examples.
+JUnit tests in test/TestLDAP2RTCSync.java are used to test LDP2RTCSync.java. The test cases read an initial config file to configure RTC in a known way, and then another exectution of LDAP2RTCSync reads a final config file to change the server's project and team areas, and licenses in a known way. The results can then be manually verified by viewing the project area configurations using the RTC web client.
+
+## Dependencies
+
+This distribution has the following dependencies:
+
+ * Rational Team Concert Plain Java Client APIs version 6.0.2
+ * junit 4.12
+ * Maven artifact com.googlecode.json-simple:json-simple version 1.1.1
+ * Maven artifact org.slf4j:slf4j-log4j12 version 1.7.25
+ * Maven artifact commons-cli:commons-cli 1.2
 
 ## Contributors
 
-Let people know how they can dive into the project, include important links to things like issue trackers, irc, twitter accounts if applicable.
+Contributors:
+
+* Jim Amsden (IBM)
+* David Bellagio (IBM)
+* Ralph Schoon (IBM)
 
 ## License
 
-A short snippet describing the license (MIT, Apache, etc.)
+Licensed under the IBM International License Agreement for Non-Warranted Programs.
+
