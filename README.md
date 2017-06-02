@@ -89,6 +89,8 @@ The JSON configuration file defines the LDAP server that provides the groups and
 
 For example, in the Sample-config.json file above, the Administrators for the *Pet Store* project area are defined by the RACF group with DN racfid=APETKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC.
 
+The RTCServers admin is the administrator of the server accessible through serverURI. The JTS server admin can administer any project or team area, they do not need to be a member or administrator of the project area.
+
 ## Tests
 
 JUnit tests in test/TestLDAP2RTCSync.java are used to test LDP2RTCSync.java. The test cases read an initial config file to configure RTC in a known way, and then another exectution of LDAP2RTCSync reads a final config file to change the server's project and team areas, and licenses in a known way. The results can then be manually verified by viewing the project area configurations using the RTC web client.
