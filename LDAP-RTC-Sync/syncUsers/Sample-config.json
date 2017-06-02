@@ -1,0 +1,34 @@
+{
+    "LDAPConnection": {
+        "URI": "ldap://mvs255.rtp.raleigh.ibm.com",
+        "userId": "racfid=BGREEN,profiletype=USER,CN=RACF255,O=IBM,C=RTC",
+        "password": "ARfvvd0+8A4="
+    },
+    "RTCServers": [
+        {"serverURI": "https://rtceerb.rtp.raleigh.ibm.com:9443/ccm",
+         "admin": "JAZZ",
+         "password": "FdjJiGnSwpU=",
+         "Licenses": [
+            {"Rational Team Concert - Developer": "racfid=RTCDLI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+            {"Rational Team Concert - Contributor": "racfid=RTCCLI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
+         ],
+         "Project Areas": [
+            {"name": "Pet Store",
+             "Administrators": "racfid=APETKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+             "Members": "racfid=APETBI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+             "Process Roles": [
+                {"Developer": "racfid=OPETKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                {"Tester": "racfid=TPETKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}],
+             "Team Areas": [
+                {"name": "Pet Management",
+                "Administrators": "racfid=APETKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                "Members": "racfid=APETBI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC",
+                "Process Roles": [
+                    {"Developer": "racfid=OPETKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+                    {"Tester": "racfid=TPETKI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}]
+                }]
+            }            
+           ]
+        }
+    ]
+}

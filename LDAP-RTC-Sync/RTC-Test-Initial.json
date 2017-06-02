@@ -5,12 +5,12 @@
         "password": "ARfvvd0+8A4="
     },
     "RTCServers": [
-        {"serverURI": "https://ce4iot.rtp.raleigh.ibm.com:9443/ccm",
-         "admin": "jamsden",
-         "password": "udp8Wu0YGUh3anhsI72SLA==",
+        {"serverURI": "https://rtceerb.rtp.raleigh.ibm.com:9443/ccm",
+         "admin": "JAZZ",
+         "password": "FdjJiGnSwpU=",
          "Licenses": [
-            {"Rational Team Concert - Developer": "racfid=RTCDLI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
-            {"Rational Team Concert - Contributor": "racfid=RTCCLI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
+            {"Rational Team Concert - Developer-Floating": "racfid=RTCDLI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"},
+            {"Rational Team Concert - Contributor-Floating": "racfid=RTCCLI,profiletype=GROUP,CN=RACF255,O=IBM,C=RTC"}
          ],
          "Project Areas": [
             {"name": "Pet Store",

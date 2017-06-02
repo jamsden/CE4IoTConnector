@@ -12,15 +12,13 @@ package com.ibm.repotools.utilities;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
+import java.util.Set;
 
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
@@ -127,7 +125,7 @@ public class ProjectArea {
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		} catch (TeamRepositoryException e) {
-			log.error("Project or Team Area: "+getName()+" does not exist");
+			log.error("Project or Team Area: "+getName()+" exception: "+e.getMessage());
 			e.printStackTrace();
 		} catch (URISyntaxException e) {
 			log.error(e.getMessage());
@@ -200,11 +198,13 @@ public class ProjectArea {
 	 * must match the process roles for the process description defined for the ProjectArea.
 	 * 
 	 * @param p the project or team area to synchronize
+	 * @throws TeamRepositoryException 
 	 */
-	public void syncProcessRoles(IProcessArea p) {
+	public void syncProcessRoles(IProcessArea p) throws TeamRepositoryException {
 		log.info("Syncing process roles for "+getName());
 		
 		// Collect the desired roles for each userId as specified in the LDAP groups in the config file
+		// desiredRoles<user, list of desired roles>
 		Map<String, List<String>> desiredRoles = new HashMap<String, List<String>>();
 		JSONArray processRoleObjects =  (JSONArray)rawPA.get("Process Roles");
 		if (processRoleObjects == null || processRoleObjects.size() == 0) {
@@ -241,30 +241,34 @@ public class ProjectArea {
 				log.error("LDAP group: "+racfGroupDN+" does not exist");;
 			}
 		}
-		// Next get the roles the user currently plays in the project area - these may be lower case
+		// Next get the roles the users currently play in the project area - these may be lower case
 		Map<String, List<IRole>> actualRoles = new HashMap<String, List<IRole>>();
-		Iterator<String> users = desiredRoles.keySet().iterator();
+		Set<String> allUsers = rtc.getMembers(p, "Members").keySet();
+		Iterator<String> users = allUsers.iterator();
 		while (users.hasNext()) {
 			String user = users.next();
 			actualRoles.put(user, rtc.getRoleAssignments(p, user));
 		}
 		
 		// Now sync the desired and actual roles
-		users = desiredRoles.keySet().iterator();
+		users = allUsers.iterator();
 		while (users.hasNext()) {
 			String user = users.next();
-			List<IRole> rolesToRemoveForUser = actualRoles.get(user);
-			Iterator<String> desiredRolesForUser = desiredRoles.get(user).iterator();
-			while (desiredRolesForUser.hasNext()) {
-				String desiredRole = desiredRolesForUser.next();
-				IRole actualRole = getRole(desiredRole, actualRoles.get(user));
-				if (actualRole == null) {
-					// User doesn't play the desired role, add it
-					log.info("Adding role "+desiredRole+" to user "+user+" in project area "+p.getName());
-					rtc.addProcessRole(p, desiredRole, user);
-				} else {
-					// User already plays the desired role, don't remove it
-					rolesToRemoveForUser.remove(actualRole);
+			List<IRole> rolesToRemoveForUser = actualRoles.get(user);  // assume we remove all the roles
+			List<String> desiredRolesForUser = desiredRoles.get(user);
+			if (desiredRolesForUser != null) {
+				Iterator<String> roles = desiredRolesForUser.iterator();
+				while (roles.hasNext()) {
+					String desiredRole = roles.next();
+					IRole actualRole = getRole(desiredRole, actualRoles.get(user));
+					if (actualRole == null) {
+						// User doesn't play the desired role, add it
+						log.info("Adding role "+desiredRole+" to user "+user+" in project area "+p.getName());
+						rtc.addProcessRole(p, desiredRole, user);
+					} else {
+						// User already plays the desired role, don't remove it
+						rolesToRemoveForUser.remove(actualRole);
+					}
 				}
 			}
 			// remove the roles the user should no longer play
