@@ -115,5 +115,5 @@ Contributors:
 
 ## License
 
-Licensed under the IBM International License Agreement for Non-Warranted Programs.
+Licensed under the [Eclipse Public License](./LDAP-RTC-Sync/license.txt).
 
