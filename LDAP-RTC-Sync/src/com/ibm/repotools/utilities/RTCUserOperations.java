@@ -52,7 +52,6 @@ import com.ibm.team.repository.common.TeamRepositoryException;
  */
 public class RTCUserOperations {
 	
-	private RTCServer server = null;
 	private Logger log = null;
 	private ITeamRepository teamRepository = null;
 	private IProcessClientService processClient = null;
@@ -71,7 +70,6 @@ public class RTCUserOperations {
 	 * @throws LoginException 
 	 */
 	public RTCUserOperations(RTCServer server, Logger log) throws LoginException {
-		this.server = server;
 		this.log = log;
 		
 		// Startup the team platform unless its already started
@@ -133,6 +131,7 @@ public class RTCUserOperations {
 	 * 
 	 * @throws TeamRepositoryException
 	 */
+	@SuppressWarnings("unchecked")
 	public List<IContributor> getUsers() throws TeamRepositoryException {
 		return teamRepository.contributorManager().fetchAllContributors(progressMonitor);
 	}
@@ -325,12 +324,12 @@ public class RTCUserOperations {
 		try {
 			IContributor user = teamRepository.contributorManager().fetchContributorByUserId(userId, progressMonitor);
 			IRole role = getRole(p, roleID, progressMonitor);
-			p = (IProcessArea) itemService.getMutableCopy(p);
-			p.addRoleAssignments(user, new IRole[] { role });
+			IProcessArea pi = (IProcessArea) itemService.getMutableCopy(p);
+			pi.addRoleAssignments(user, new IRole[] { role });
 
-			itemService.save(new IProcessItem[] { p }, progressMonitor);
+			itemService.save(new IProcessItem[] { pi }, progressMonitor);
 		} catch (TeamRepositoryException e) {
-			log.error("Unable to add process role: "+roleID+" to user: "+userId);
+			log.error("Unable to add process role: {} to user: {} due to: {}", roleID, userId, e.getMessage());
 		}
 	}
 	
@@ -345,12 +344,12 @@ public class RTCUserOperations {
 		try {
 			IContributor user = teamRepository.contributorManager().fetchContributorByUserId(userId, progressMonitor);
 			IRole role = getRole(p, roleID, progressMonitor);
-			p = (IProcessArea) itemService.getMutableCopy(p);
-			p.removeRoleAssignments(user, new IRole[] { role });
+			IProcessArea pi = (IProcessArea) itemService.getMutableCopy(p);
+			pi.removeRoleAssignments(user, new IRole[] { role });
 
-			itemService.save(new IProcessItem[] { p }, progressMonitor);
+			itemService.save(new IProcessItem[] { pi }, progressMonitor);
 		} catch (TeamRepositoryException e) {
-			log.error("Unable to remove process role: "+roleID+" from user: "+userId);
+			log.error("Unable to remove process role: {} from user: {} due to: ", roleID, userId, e.getMessage());
 		}
 	}
 

@@ -125,6 +125,7 @@ public class RTCServer {
 		}
 		
 		// For each License object in the the JSON config file:
+		@SuppressWarnings("unchecked")
 		Iterator<JSONObject> licenses = licenseObjects.iterator();
 		while (licenses.hasNext()) {
 			JSONObject license = licenses.next();
@@ -242,6 +243,7 @@ public class RTCServer {
 		if (serverObject == null || rtc == null) return null;
 		List<ProjectArea> projectAreas = new ArrayList<ProjectArea>();
 		if (serverObject.get("Project Areas") == null) return projectAreas; // none specified
+		@SuppressWarnings("unchecked")
 		Iterator<JSONObject> pas = ((JSONArray)serverObject.get("Project Areas")).iterator();
 		while (pas.hasNext()) {
 			projectAreas.add(new ProjectArea(pas.next(), ldapConnection, rtc, log));

@@ -9,8 +9,6 @@
  */
 package com.ibm.repotools.utilities;
 
-import java.util.Iterator;
-
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 

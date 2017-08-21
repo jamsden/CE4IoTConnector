@@ -72,6 +72,7 @@ public class LdapRtcConfig {
 	 */
 	public Collection<RTCServer> getServers() {
 		List<RTCServer> servers = new ArrayList<RTCServer>();
+		@SuppressWarnings("unchecked")
 		Iterator<JSONObject> srvs = ((JSONArray)obj.get("RTCServers")).iterator();
 		while (srvs.hasNext()) {
 			servers.add(new RTCServer(srvs.next(), ldapConnection, log));

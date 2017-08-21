@@ -67,6 +67,7 @@ public class ProjectArea {
 		
 		JSONArray rawTeamAreas = (JSONArray)pa.get("Team Areas");
 		if (rawTeamAreas == null) return; // there are no child team areas
+		@SuppressWarnings("unchecked")
 		Iterator<JSONObject> tas = rawTeamAreas.iterator();
 		while (tas.hasNext()) {
 			children.add(new TeamArea(this, tas.next(), ldapConnection, rtc, log));
@@ -211,6 +212,7 @@ public class ProjectArea {
 			log.warn("No process roles were specified for "+getName());
 			return;
 		}
+		@SuppressWarnings("unchecked")
 		Iterator<JSONObject> processRoles = processRoleObjects.iterator();
 		while (processRoles.hasNext()) {
 			JSONObject processRole = processRoles.next();

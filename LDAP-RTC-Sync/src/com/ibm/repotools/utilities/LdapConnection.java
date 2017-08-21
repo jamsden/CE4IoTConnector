@@ -94,13 +94,13 @@ public class LdapConnection {
 		List<String> result = new ArrayList<String>();
 		// Add all the members of this group
 		Attribute members = ctx.getAttributes(groupDN).get("racfgroupuserids");
-		NamingEnumeration ldapUsers = (members != null)? members.getAll(): null;
+		NamingEnumeration<?> ldapUsers = (members != null)? members.getAll(): null;
 		while (ldapUsers != null && ldapUsers.hasMoreElements()) {
 			result.add((String)ldapUsers.next());
 		}
 
 		// now recursively do all the subgroups
-		NamingEnumeration subgroups = null;
+		NamingEnumeration<?> subgroups = null;
 		Attribute groups = ctx.getAttributes(groupDN).get("racfsubgroupname");
 		if (groups != null) subgroups = groups.getAll(); 
 		while (subgroups != null && subgroups.hasMoreElements()) {

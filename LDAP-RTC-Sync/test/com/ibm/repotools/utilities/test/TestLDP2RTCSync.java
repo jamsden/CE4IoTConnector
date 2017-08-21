@@ -1,17 +1,9 @@
 package com.ibm.repotools.utilities.test;
 
-import static org.junit.Assert.fail;
-
-import java.util.Iterator;
-
-import org.apache.commons.cli.ParseException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.ibm.repotools.utilities.LDAP2RTCSync;
-import com.ibm.repotools.utilities.RTCServer;
-import com.ibm.team.repository.client.TeamPlatform;
-import com.ibm.team.repository.common.transport.HostUnknownException;
 
 public class TestLDP2RTCSync {
 
