@@ -110,12 +110,18 @@ public class ProjectArea {
 			
 			// Members
 			syncUsers("Members", pa);
-			
+
 			// Process Roles
 			syncProcessRoles(pa);
 			
 			// Save the modified project or team area
 			service.save(pa, null);
+			// Get a new mutable copy for the child team areas
+			try {
+				Thread.sleep(4000);
+			} catch (InterruptedException e) {
+			}
+			pa = (IProcessArea)service.getMutableCopy(pa);
 			
 			// Now do the child Team Areas, if any
 			if (children == null) return;

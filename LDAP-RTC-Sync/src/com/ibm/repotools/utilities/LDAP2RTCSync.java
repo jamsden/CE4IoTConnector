@@ -51,6 +51,7 @@ public class LDAP2RTCSync {
 	 * @throws TeamRepositoryException
 	 */
 	public static void main(String[] args) throws TeamRepositoryException {
+		int status = 0;
 		LDAP2RTCSync synchronizer = new LDAP2RTCSync();
 		synchronizer.log.info("Synchronizing LDAP and RTC Users");
 		try {
@@ -59,10 +60,12 @@ public class LDAP2RTCSync {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			status = -1;
 		} finally {
 			TeamPlatform.shutdown();
 		}
 		synchronizer.log.info("Done");
+		System.exit(status);
 	}
 
 	/** Synchronizes LDAP (RACF) and RTC users
