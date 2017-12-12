@@ -50,6 +50,7 @@ public class LdapConnection {
 			ctx = new InitialLdapContext(env, null);
 		} catch (NamingException e) {
 			e.printStackTrace();
+			Status.appStatus.setCode(-1);
 		}
 
 	}

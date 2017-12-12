@@ -10,7 +10,6 @@
 package com.ibm.repotools.utilities;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,12 +45,9 @@ public class LdapRtcConfig {
 		try {
 			String filePath = new File("").getAbsolutePath().concat(File.separator).concat(configFile);
 			obj = (JSONObject)parser.parse(new FileReader(filePath));
-	    } catch (FileNotFoundException e) {
+	    } catch (IOException | org.json.simple.parser.ParseException e) {
 	        e.printStackTrace();
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	    } catch (org.json.simple.parser.ParseException e) {
-	        e.printStackTrace();
+	        Status.appStatus.setCode(-1);
 	    }
 	}
 	

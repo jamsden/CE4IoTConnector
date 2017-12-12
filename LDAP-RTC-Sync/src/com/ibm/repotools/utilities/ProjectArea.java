@@ -99,6 +99,7 @@ public class ProjectArea {
 			IProcessArea pa = rtc.getProjectArea(getName());
 			if (pa == null) {
 				log.error("Project or Team Area: "+getName()+" does not exist");
+				Status.appStatus.setCode(-1);
 				return;
 			}
 
@@ -131,11 +132,14 @@ public class ProjectArea {
 			}
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
+			Status.appStatus.setCode(-1);
 		} catch (TeamRepositoryException e) {
 			log.error("Project or Team Area: "+getName()+" exception: "+e.getMessage());
 			e.printStackTrace();
+			Status.appStatus.setCode(-1);
 		} catch (URISyntaxException e) {
 			log.error(e.getMessage());
+			Status.appStatus.setCode(-1);
 		}
 	}
 
@@ -155,6 +159,7 @@ public class ProjectArea {
 		log.info("Syncing "+memberRole+" users from LDAP group: "+racfGroupDN);
 		if (racfGroupDN == null) {
 			log.warn("LDAP group for "+memberRole+" is not specified");
+			Status.appStatus.setCode(-1);
 			return;
 		}
 		try {
@@ -170,6 +175,7 @@ public class ProjectArea {
 				Attributes ldapUser = ldapConnection.getContext().getAttributes(userDN);
 				if (ldapUser == null) {
 					log.error("LDAP user: "+userDN+" is not defined in LDAP");
+					Status.appStatus.setCode(-1);
 					continue;
 				}
 				String userId = ldapUser.get("racfid").get().toString();  
@@ -195,7 +201,8 @@ public class ProjectArea {
 				rtc.removeMember(pa, memberRole, member);
 			}
 		} catch (NamingException e) {
-			log.error("LDAP group: "+racfGroupDN+" does not exist");;
+			log.error("LDAP group: "+racfGroupDN+" does not exist");
+			Status.appStatus.setCode(-1);
 		}						
 	}
 
@@ -233,6 +240,7 @@ public class ProjectArea {
 					Attributes ldapUser = ldapConnection.getContext().getAttributes(userDN);
 					if (ldapUser == null) {
 						log.error("LDAP user: "+userDN+" is not defined in LDAP");
+						Status.appStatus.setCode(-1);
 						continue;
 					}
 					String userId = ldapUser.get("racfid").get().toString();
@@ -246,7 +254,8 @@ public class ProjectArea {
 
 				}
 			} catch (NamingException e) {
-				log.error("LDAP group: "+racfGroupDN+" does not exist");;
+				log.error("LDAP group: "+racfGroupDN+" does not exist");
+				Status.appStatus.setCode(-1);
 			}
 		}
 		// Next get the roles the users currently play in the project area - these may be lower case

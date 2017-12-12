@@ -29,6 +29,8 @@ import com.ibm.team.repository.client.TeamPlatform;
 import com.ibm.team.repository.common.TeamRepositoryException;
 import com.ibm.team.repository.common.util.ObfuscationHelper;
 
+import com.ibm.repotools.utilities.Status;
+
 /** A program to synchronize LDAP (RACF) and RTC users.
  *   * Server users based on repository permissions (JazzAdmins, JazzUsers, etc.)
  *   * Client access license assignment and unassignment
@@ -51,21 +53,22 @@ public class LDAP2RTCSync {
 	 * @throws TeamRepositoryException
 	 */
 	public static void main(String[] args) throws TeamRepositoryException {
-		int status = 0;
 		LDAP2RTCSync synchronizer = new LDAP2RTCSync();
 		synchronizer.log.info("Synchronizing LDAP and RTC Users");
 		try {
 			if (synchronizer.initialize(args)) {
 				synchronizer.sync();
+			} else {
+				Status.appStatus.setCode(-2); // not enough information to run
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			status = -1;
+			Status.appStatus.setCode(-1);
 		} finally {
 			TeamPlatform.shutdown();
 		}
 		synchronizer.log.info("Done");
-		System.exit(status);
+		System.exit(Status.appStatus.getCode());
 	}
 
 	/** Synchronizes LDAP (RACF) and RTC users
@@ -146,6 +149,7 @@ public class LDAP2RTCSync {
 			}
 		} catch (NamingException e) {
 			e.printStackTrace();
+			Status.appStatus.setCode(-1);
 		}
 	}
 }

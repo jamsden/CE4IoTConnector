@@ -91,6 +91,7 @@ public class RTCUserOperations {
 			
 		} catch (Exception e) {
 			log.error("Unable to login to: " + server.getServerURI());
+			Status.appStatus.setCode(-1);
 			throw new LoginException("Unable to login to: " + server.getServerURI());
 		}
 		
@@ -150,6 +151,7 @@ public class RTCUserOperations {
 		IProcessArea processArea = (IProcessArea)processClient.findProcessArea(uri, IProcessClientService.ALL_PROPERTIES, progressMonitor);
 		if (processArea == null) {
 			log.error("Project area "+projectAreaName+" not found.");
+			Status.appStatus.setCode(-1);
 		}
 		return processArea;
 	}
@@ -178,6 +180,7 @@ public class RTCUserOperations {
 			contributor = teamRepository.contributorManager().saveContributor(i1, progressMonitor);
 		} catch (TeamRepositoryException e) {
 			e.printStackTrace();
+			Status.appStatus.setCode(-1);
 		}
 		return contributor;
 	}
@@ -209,6 +212,7 @@ public class RTCUserOperations {
 			contributors = pa.getMembers();
 		} else {
 			log.error("Invalid project area member role: "+memberRole);
+			Status.appStatus.setCode(-1);
 			return null;
 		}
 		for (int c=0; c<contributors.length; c++) {
@@ -223,6 +227,7 @@ public class RTCUserOperations {
 		try {
 			contributor = (IContributor)teamRepository.itemManager().fetchCompleteItem(contributorHandle, IItemManager.DEFAULT, progressMonitor);
 		} catch (TeamRepositoryException e) {
+			Status.appStatus.setCode(-1);
 			e.printStackTrace();
 		}
 		return contributor;
@@ -251,6 +256,7 @@ public class RTCUserOperations {
 			}
 		} catch (TeamRepositoryException e) {
 			log.error("User: "+userId+" is not a member of this server");
+			Status.appStatus.setCode(-1);
 		}
 		return contributorHandle;
 	}
@@ -274,6 +280,7 @@ public class RTCUserOperations {
 			contributor = teamRepository.contributorManager().saveContributor(contributor, progressMonitor);
 		} catch (TeamRepositoryException e) {
 			e.printStackTrace();
+			Status.appStatus.setCode(-1);
 		}
 		return contributor;
 	}
@@ -309,6 +316,7 @@ public class RTCUserOperations {
 			return roleAssignments;
 		} catch (TeamRepositoryException e) {
 			log.error("Cannot get process roles for user: "+userId);
+			Status.appStatus.setCode(-1);
 		}
 		return roleAssignments;
 	}
@@ -330,6 +338,7 @@ public class RTCUserOperations {
 			itemService.save(new IProcessItem[] { pi }, progressMonitor);
 		} catch (TeamRepositoryException e) {
 			log.error("Unable to add process role: {} to user: {} due to: {}", roleID, userId, e.getMessage());
+			Status.appStatus.setCode(-1);
 		}
 	}
 	
@@ -350,6 +359,7 @@ public class RTCUserOperations {
 			itemService.save(new IProcessItem[] { pi }, progressMonitor);
 		} catch (TeamRepositoryException e) {
 			log.error("Unable to remove process role: {} from user: {} due to: ", roleID, userId, e.getMessage());
+			Status.appStatus.setCode(-1);
 		}
 	}
 
@@ -386,8 +396,10 @@ public class RTCUserOperations {
 			return licensedContributors = licenseAdminService.getLicensedContributors(getLicenseId(cla));
 		} catch (TeamRepositoryException e) {
 			log.error("Cannot get users assigned to CLA: "+cla);
+			Status.appStatus.setCode(-1);
 		} catch (Exception e) {
-			log.error("Cannot get users assigned to CLA: "+cla);			
+			log.error("Cannot get users assigned to CLA: "+cla);		
+			Status.appStatus.setCode(-1);
 		}
 		return licensedContributors;
 	}
@@ -409,8 +421,10 @@ public class RTCUserOperations {
 			assignedLicenses.addAll(Arrays.asList(licenseAdminService.getAssignedLicenses(user)));
 		} catch (TeamRepositoryException e) {
 			log.error("Cannot get licenses for user: "+userId);
+			Status.appStatus.setCode(-1);
 		} catch (Exception e) {
 			log.error("Cannot get licenses for for user: "+userId);
+			Status.appStatus.setCode(-1);
 		}
 		return assignedLicenses;
 		
@@ -444,6 +458,7 @@ public class RTCUserOperations {
 			licenseAdminService.assignLicense(user, licenseId);
 		} catch (TeamRepositoryException e) {
 			log.error("Unable to assign client access license: "+licenseKey+" to user: "+userId);
+			Status.appStatus.setCode(-1);
 		}
 	}
 
@@ -459,6 +474,7 @@ public class RTCUserOperations {
 			licenseAdminService.unassignLicense(user, licenseId);
 		} catch (TeamRepositoryException e) {
 			log.error("Unable to unassign client access license: "+licenseKey+" from user: "+userId);
+			Status.appStatus.setCode(-1);
 		}
 	}
 

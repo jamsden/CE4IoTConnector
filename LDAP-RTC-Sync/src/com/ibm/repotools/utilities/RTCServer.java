@@ -56,6 +56,7 @@ public class RTCServer {
 			rtc = new RTCUserOperations(this, log);
 		} catch (LoginException e) {
 			rtc = null;
+			Status.appStatus.setCode(-1);
 		}
 	}
 	
@@ -162,7 +163,8 @@ public class RTCServer {
 
 				}
 			} catch (NamingException e) {
-				log.error("LDAP group: "+racfGroupDN+" does not exist");;
+				log.error("LDAP group: "+racfGroupDN+" does not exist");
+				Status.appStatus.setCode(-1);
 			}
 		}
 		
